@@ -643,13 +643,18 @@ function scrollChatToBottom(){
   }, 100);
       }
   // ==================== TOURNAMENTS ====================
-function renderTournamentsAdmin(){
+function renderTournamentsAdmin()function renderTournamentsAdmin(){
   $('adminMain').innerHTML = `<div class="page glass card p-8 text-center">
     <div class="text-3xl mb-3">🏆</div>
     <div class="font-game text-cyan-300">TOURNAMENTS</div>
     <div class="text-xs text-slate-400 mt-2">Loaded: ${tournamentsCache.length}</div>
     <div class="text-[10px] text-slate-500 mt-4">Full CRUD coming soon</div>
   </div>`;
+}
+
+function renderResultsAdmin(){
+  $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Results — coming soon</div>`;
+}
 }
 
 function renderResultsAdmin(){
@@ -792,10 +797,152 @@ window.rejectWithdrawal = async function(txId){
 };
 
 // ==================== MODES + BANNERS ====================
+function renderModes()// ==================== GAME MODES ====================
+let gameModesCache = [];
+
 function renderModes(){
-  $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Game Modes — coming soon</div>`;
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🎮 ADD GAME MODE</div>
+        <input id="gmName" class="input mb-2" placeholder="Mode name (e.g., BR Solo)"/>
+        <input id="gmIcon" class="input mb-2" placeholder="Icon emoji (e.g., 🎯)" value="🎮"/>
+        <button onclick="addGameMode()" class="btn w-full py-2 bg-cyan-500 text-black">ADD MODE</button>
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 GAME MODES (${gameModesCache.length})</div>
+        <div id="gmList" class="space-y-2">
+          ${gameModesCache.length ? gameModesCache.map(m => gameModeRow(m)).join('') :
+            `<div class="text-slate-400 text-xs text-center py-6">No modes yet</div>`}
+        </div>
+      </div>
+    </div>
+  `;
 }
+
+function gameModeRow(m){
+  return `
+    <div class="flex items-center gap-2 p-3 rounded-lg bg-white/5 border border-white/10">
+      <div class="text-2xl">${escapeHtml(m.icon||'🎮')}</div>
+      <div class="flex-1">
+        <div class="font-semibold text-xs">${escapeHtml(m.name||'-')}</div>
+        <div class="text-[10px] ${m.active?'text-green-300':'text-red-300'}">${m.active?'ACTIVE':'DISABLED'}</div>
+      </div>
+      <button onclick="toggleGameMode('${m.id}', ${m.active})" class="btn px-2 py-1 text-[10px] ${m.active?'bg-red-500/20 text-red-300':'bg-green-500/20 text-green-300'}">${m.active?'Disable':'Enable'}</button>
+      <button onclick="deleteGameMode('${m.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/30 text-red-200">🗑</button>
+    </div>
+  `;
+}
+
+window.addGameMode = async function(){
+  const name = $('gmName').value.trim();
+  const icon = $('gmIcon').value.trim() || '🎮';
+  if(!name){ Swal.fire({icon:'warning', title:'Name required', background:'#0d1330', color:'#fff'}); return; }
+  try {
+    await addDoc(collection(db, 'gameModes'), { name, icon, active:true, at: serverTimestamp() });
+    await audit('GAMEMODE_ADD', 'gameMode', name);
+    $('gmName').value = '';
+    Swal.fire({icon:'success', title:'Added!', background:'#0d1330', color:'#fff', timer:1000, showConfirmButton:false});
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.toggleGameMode = async function(id, current){
+  try {
+    await updateDoc(doc(db, 'gameModes', id), { active: !current });
+    await audit('GAMEMODE_TOGGLE', 'gameMode', id);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.deleteGameMode = async function(id){
+  const r = await Swal.fire({
+    title:'Delete mode?', icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await deleteDoc(doc(db, 'gameModes', id));
+    await audit('GAMEMODE_DELETE', 'gameMode', id);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+// ==================== BANNERS ====================
+let bannersCache = [];
+
 function renderBanners(){
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🖼️ ADD BANNER</div>
+        <input id="bnTitle" class="input mb-2" placeholder="Banner title"/>
+        <input id="bnSubtitle" class="input mb-2" placeholder="Subtitle (optional)"/>
+        <input id="bnBtn" class="input mb-2" placeholder="Button text (e.g., Join Now)" value="Join Now"/>
+        <select id="bnAction" class="input mb-2">
+          <option value="tournaments">Go to Tournaments</option>
+          <option value="wallet">Go to Wallet</option>
+          <option value="messages">Go to Messages</option>
+        </select>
+        <button onclick="addBanner()" class="btn w-full py-2 bg-cyan-500 text-black">ADD BANNER</button>
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 BANNERS (${bannersCache.length})</div>
+        <div class="space-y-2">
+          ${bannersCache.length ? bannersCache.map(b => bannerRow(b)).join('') :
+            `<div class="text-slate-400 text-xs text-center py-6">No banners yet</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function bannerRow(b){
+  return `
+    <div class="p-3 rounded-lg bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border border-cyan-500/30">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <div class="font-semibold text-xs">${escapeHtml(b.title||'-')}</div>
+          <div class="text-[10px] text-slate-300 mt-1">${escapeHtml(b.subtitle||'')}</div>
+          <div class="text-[9px] text-slate-400 mt-1">Action: ${escapeHtml(b.action||'tournaments')} • ${b.active!==false?'ACTIVE':'OFF'}</div>
+        </div>
+        <div class="flex gap-1">
+          <button onclick="toggleBanner('${b.id}', ${b.active !== false})" class="btn px-2 py-1 text-[10px] ${b.active!==false?'bg-red-500/20 text-red-300':'bg-green-500/20 text-green-300'}">${b.active!==false?'Off':'On'}</button>
+          <button onclick="deleteBanner('${b.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/30 text-red-200">🗑</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.addBanner = async function(){
+  const title = $('bnTitle').value.trim();
+  const subtitle = $('bnSubtitle').value.trim();
+  const btn = $('bnBtn').value.trim() || 'Join Now';
+  const action = $('bnAction').value;
+  if(!title){ Swal.fire({icon:'warning', title:'Title required', background:'#0d1330', color:'#fff'}); return; }
+  try {
+    await addDoc(collection(db, 'banners'), { title, subtitle, btn, action, active:true, at: serverTimestamp() });
+    await audit('BANNER_ADD', 'banner', title);
+    $('bnTitle').value = ''; $('bnSubtitle').value = '';
+    Swal.fire({icon:'success', title:'Added!', background:'#0d1330', color:'#fff', timer:1000, showConfirmButton:false});
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.toggleBanner = async function(id, current){
+  try {
+    await updateDoc(doc(db, 'banners', id), { active: !current });
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.deleteBanner = async function(id){
+  const r = await Swal.fire({
+    title:'Delete banner?', icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await deleteDoc(doc(db, 'banners', id));
+    await audit('BANNER_DELETE', 'banner', id);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};){
   $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Banners — coming soon</div>`;
 }
 
@@ -849,10 +996,46 @@ window.sendNotification = async function(){
     Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
   }
 };
+// ==================== AUDIT LOG ====================
+let auditCache = [];
 
-// ==================== AUDIT ====================
 function renderAudit(){
-  $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Audit Log — coming soon</div>`;
+  $('adminMain').innerHTML = `
+    <div class="page glass card p-4">
+      <div class="font-game text-sm text-cyan-300 mb-3">📜 AUDIT LOG (${auditCache.length})</div>
+      <div class="space-y-2 max-h-[70vh] overflow-y-auto">
+        ${auditCache.length ? auditCache.slice(0,100).map(a => auditRow(a)).join('') :
+          `<div class="text-slate-400 text-xs text-center py-6">No activity yet</div>`}
+      </div>
+    </div>
+  `;
+}
+
+function auditRow(a){
+  const iconMap = {
+    'LOGIN':'🔓','LOGOUT':'🔒',
+    'USER_BLOCK':'🚫','USER_UNBLOCK':'✅',
+    'DEPOSIT_APPROVE':'💰','DEPOSIT_REJECT':'❌',
+    'WITHDRAWAL_APPROVE':'💸','WITHDRAWAL_REJECT':'❌',
+    'TOURNAMENT_CREATE':'🏆','TOURNAMENT_STATUS':'🔄','TOURNAMENT_DELETE':'🗑',
+    'RESULT_PUBLISH':'📋',
+    'GAMEMODE_ADD':'🎮','GAMEMODE_TOGGLE':'🎮','GAMEMODE_DELETE':'🗑',
+    'BANNER_ADD':'🖼️','BANNER_DELETE':'🗑',
+    'NOTIFICATION_SEND':'🔔'
+  };
+  const icon = iconMap[a.action] || '📌';
+  return `
+    <div class="p-3 rounded-lg bg-white/5 border border-white/10">
+      <div class="flex items-center gap-2">
+        <div class="text-lg">${icon}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-xs">${escapeHtml(a.action||'-')}</div>
+          <div class="text-[10px] text-slate-400">${escapeHtml(a.target||'-')} • ${escapeHtml(a.recordId||'-')}</div>
+        </div>
+        <div class="text-[10px] text-slate-500 text-right">${shortTime(a.at)}</div>
+      </div>
+    </div>
+  `;
 }
 
 // ==================== HELPERS ====================
