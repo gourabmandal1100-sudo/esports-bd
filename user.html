@@ -320,6 +320,11 @@ onAuthStateChanged(auth, async (user) => {
         Swal.fire({icon:'error', title:'Account blocked', text:'Admin এর সাথে যোগাযোগ করুন', background:'#0d1330', color:'#fff'});
         return;
       }
+      if(data.role === 'admin'){
+  await signOut(auth);
+  Swal.fire({icon:'info', title:'Admin account', text:'Admin panel ব্যবহার করুন: /admin.html', background:'#0d1330', color:'#fff'});
+  return;
+      }
       currentUser = user;
       currentUserData = { id: user.uid, ...data };
 
