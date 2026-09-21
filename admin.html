@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>E-SPORTS BD — Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --navy:#070b1c; --navy2:#0d1330; --cyan:#00e5ff; --yellow:#ffd60a;
+    --purple:#a855f7; --green:#22ff88; --red:#ff3b5c;
+  }
+  *{font-family:'Inter',sans-serif;}
+  h1,h2,h3,.font-game{font-family:'Orbitron',sans-serif;letter-spacing:.5px;}
+  body{background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(0,229,255,.15), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(168,85,247,.15), transparent 60%),
+    var(--navy); color:#e7ecff; min-height:100vh;}
+  .glass{background:rgba(20,28,60,.55); backdrop-filter:blur(14px); border:1px solid rgba(120,160,255,.15);}
+  .card{border-radius:16px;}
+  .btn{border-radius:10px; font-weight:700; transition:.2s; cursor:pointer;}
+  .btn:active{transform:scale(.97);}
+  .input{background:rgba(255,255,255,.05); border:1px solid rgba(120,160,255,.2); border-radius:10px; padding:10px 12px; width:100%; color:#fff; outline:none; font-size:13px;}
+  .input:focus{border-color:var(--cyan);}
+  .glow-cyan{box-shadow:0 0 20px rgba(0,229,255,.25);}
+  .neon-text{text-shadow:0 0 8px currentColor;}
+  .sidebar{background:rgba(7,11,28,.95); border-right:1px solid rgba(120,160,255,.15);}
+  .nav-item{padding:12px 16px; border-radius:10px; display:flex; align-items:center; gap:10px; cursor:pointer; font-size:14px; transition:.2s; color:#a8b6dd;}
+  .nav-item:hover{background:rgba(0,229,255,.08); color:#fff;}
+  .nav-item.active{background:linear-gradient(90deg, rgba(0,229,255,.2), rgba(168,85,247,.2)); color:#00e5ff; border-left:3px solid #00e5ff;}
+  .nav-item .nav-badge{margin-left:auto; background:#ff3b5c; color:#fff; font-size:10px; padding:2px 7px; border-radius:999px; font-weight:700;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th,td{padding:10px; text-align:left; border-bottom:1px solid rgba(120,160,255,.1);}
+  th{color:#8ea0cc; font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:.5px;}
+  tr:hover td{background:rgba(0,229,255,.03);}
+  .stat{padding:16px; border-radius:14px; background:linear-gradient(135deg, rgba(0,229,255,.08), rgba(168,85,247,.08)); border:1px solid rgba(120,160,255,.15);}
+  .badge{padding:3px 9px; border-radius:999px; font-size:10px; font-weight:600;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);}}
+  .page{animation:fadeIn .25s ease;}
+  .chat-thread{max-height:55vh; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:12px; background:rgba(0,0,0,.15); border-radius:12px;}
+  .msg-bubble{padding:10px 14px; border-radius:16px; max-width:75%; font-size:13px; line-height:1.5; word-wrap:break-word;}
+  .msg-admin{background:linear-gradient(135deg, rgba(0,229,255,.25), rgba(168,85,247,.25)); border:1px solid rgba(0,229,255,.35); border-bottom-right-radius:4px; align-self:flex-end;}
+  .msg-user{background:linear-gradient(135deg, rgba(34,255,136,.2), rgba(0,229,255,.15)); border:1px solid rgba(34,255,136,.3); border-bottom-left-radius:4px; align-self:flex-start;}
+  .msg-meta{font-size:10px; color:#8ea0cc; margin-top:2px;}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginScreen" class="min-h-screen flex items-center justify-center p-5">
+  <div class="glass card p-8 w-full max-w-md glow-cyan">
+    <div class="text-center mb-6">
+      <div class="inline-block px-4 py-2 rounded-2xl bg-gradient-to-r from-red-500 to-purple-500 mb-3">
+        <h1 class="text-2xl font-game text-white">ADMIN CONTROL</h1>
+      </div>
+      <p class="text-xs text-cyan-300 tracking-widest">E-SPORTS BD • RESTRICTED</p>
+    </div>
+    <div class="space-y-3">
+      <input id="adminUser" class="input" placeholder="Admin Email" type="email"/>
+      <input id="adminPass" type="password" class="input" placeholder="Password"/>
+      <button id="loginBtn" onclick="doAdminLogin()" class="btn w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-black glow-cyan mt-2">AUTHENTICATE</button>
+      <div id="loginMsg" class="text-xs text-center text-red-300 hidden"></div>
+    </div>
+    <p class="text-[10px] text-center text-slate-400 mt-5">Unauthorized access is prohibited. All actions logged.</p>
+  </div>
+</div>
+
+<!-- ================= LOADING ================= -->
+<div id="loadingScreen" class="hidden min-h-screen flex items-center justify-center">
+  <div class="text-center">
+    <div class="inline-block w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+    <p class="text-cyan-300 mt-4 text-sm">Verifying admin access...</p>
+  </div>
+</div>
+
+<!-- ================= ADMIN DASHBOARD ================= -->
+<div id="adminApp" class="hidden min-h-screen flex">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar w-60 fixed h-full hidden md:flex flex-col z-30">
+    <div class="p-5 border-b border-white/10">
+      <div class="font-game text-lg text-cyan-300 neon-text">E-SPORTS BD</div>
+      <div class="text-[10px] tracking-widest text-red-400">ADMIN PANEL</div>
+    </div>
+    <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+      <div class="nav-item active" data-page="dashboard" onclick="goAdmin('dashboard')">📊 Dashboard</div>
+      <div class="nav-item" data-page="users" onclick="goAdmin('users')">👥 Users</div>
+      <div class="nav-item" data-page="messages" onclick="goAdmin('messages')">💬 Messages <span id="msgNavBadge" class="nav-badge hidden">0</span></div>
+      <div class="nav-item" data-page="tournaments" onclick="goAdmin('tournaments')">🏆 Tournaments</div>
+      <div class="nav-item" data-page="results" onclick="goAdmin('results')">📋 Results</div>
+      <div class="nav-item" data-page="deposits" onclick="goAdmin('deposits')">💰 Deposits</div>
+      <div class="nav-item" data-page="withdrawals" onclick="goAdmin('withdrawals')">💸 Withdrawals</div>
+      <div class="nav-item" data-page="modes" onclick="goAdmin('modes')">🎮 Game Modes</div>
+      <div class="nav-item" data-page="banners" onclick="goAdmin('banners')">🖼️ Banners</div>
+      <div class="nav-item" data-page="notifications" onclick="goAdmin('notifications')">🔔 Notifications</div>
+      <div class="nav-item" data-page="audit" onclick="goAdmin('audit')">📜 Audit Log</div>
+    </nav>
+    <div class="p-3 border-t border-white/10">
+      <div class="text-xs text-cyan-300 mb-2 truncate" id="adminEmail">-</div>
+      <button onclick="adminLogout()" class="btn w-full py-2 text-sm bg-red-500/20 text-red-300">LOGOUT</button>
+    </div>
+  </aside>
+
+  <!-- MOBILE TOP NAV -->
+  <div class="md:hidden fixed top-0 left-0 right-0 z-40 glass border-b border-cyan-500/20">
+    <div class="flex items-center justify-between px-3 py-2">
+      <div class="font-game text-sm text-cyan-300">E-SPORTS BD ADMIN</div>
+      <button onclick="toggleMobileNav()" class="btn px-3 py-1 text-xs bg-cyan-500/20 text-cyan-300">☰</button>
+    </div>
+    <div id="mobileNav" class="hidden grid grid-cols-3 gap-1 p-2 text-xs">
+      <div class="nav-item" onclick="goAdmin('dashboard');toggleMobileNav()">📊 Dash</div>
+      <div class="nav-item" onclick="goAdmin('users');toggleMobileNav()">👥 Users</div>
+      <div class="nav-item" onclick="goAdmin('messages');toggleMobileNav()">💬 Msg</div>
+      <div class="nav-item" onclick="goAdmin('tournaments');toggleMobileNav()">🏆 Tour</div>
+      <div class="nav-item" onclick="goAdmin('results');toggleMobileNav()">📋 Res</div>
+      <div class="nav-item" onclick="goAdmin('deposits');toggleMobileNav()">💰 Dep</div>
+      <div class="nav-item" onclick="goAdmin('withdrawals');toggleMobileNav()">💸 Wd</div>
+      <div class="nav-item" onclick="goAdmin('modes');toggleMobileNav()">🎮 Modes</div>
+      <div class="nav-item" onclick="goAdmin('banners');toggleMobileNav()">🖼️ Ban</div>
+      <div class="nav-item" onclick="goAdmin('notifications');toggleMobileNav()">🔔 Noti</div>
+      <div class="nav-item" onclick="goAdmin('audit');toggleMobileNav()">📜 Log</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="flex-1 md:ml-60 w-full pt-14 md:pt-0">
+    <header class="sticky top-0 z-20 glass border-b border-cyan-500/20 px-5 py-3 hidden md:flex items-center justify-between">
+      <div>
+        <div class="font-game text-sm text-cyan-300 neon-text" id="pageTitle">DASHBOARD</div>
+        <div class="text-[10px] text-slate-400">Welcome back, Super Admin</div>
+      </div>
+      <button onclick="goAdmin('notifications')" class="btn px-3 py-1.5 text-xs bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">+ New Notification</button>
+    </header>
+    <div id="adminMain" class="p-5"></div>
+  </main>
+</div>
+
+<script type="module">
+/* ============================================================
+   E-SPORTS BD — ADMIN PANEL (Firebase Version)
+   Part 1: Login + Firebase Init
+   ============================================================ */
+
+import {
+  auth, db,
+  signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  doc, getDoc, collection, getDocs, query, where, orderBy, limit,
+  onSnapshot, addDoc, updateDoc, deleteDoc, setDoc,
+  serverTimestamp, increment, runTransaction,
+  fmt, bdt, escapeHtml, shortTime
+} from './firebase-config.js';
+
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+let adminUser = null;       // Firebase auth user
+let adminData = null;       // Firestore users/{uid} data
+let currentPage = 'dashboard';
+let usersCache = [];        // realtime users
+let messagesCache = [];     // realtime messages
+let transactionsCache = []; // realtime transactions
+let tournamentsCache = [];  // realtime tournaments
+let notificationsCache = [];// realtime notifications
+let unsubscribers = [];     // cleanup listeners
+
+const $ = id => document.getElementById(id);
+
+// ============================================================
+// LOGIN
+// ============================================================
+window.doAdminLogin = async function(){
+  const email = $('adminUser').value.trim();
+  const pass = $('adminPass').value;
+  const msgEl = $('loginMsg');
+  const btn = $('loginBtn');
+
+  if(!email || !pass){
+    showLoginMsg('Email and password required');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'AUTHENTICATING...';
+  msgEl.classList.add('hidden');
+
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    // Check admin role in Firestore
+    const snap = await getDoc(doc(db, 'users', cred.user.uid));
+    if(!snap.exists()){
+      await signOut(auth);
+      throw new Error('User record not found in database');
+    }
+    const data = snap.data();
+    if(data.role !== 'admin'){
+      await signOut(auth);
+      throw new Error('Access denied — not an admin');
+    }
+    if(data.blocked === true){
+      await signOut(auth);
+      throw new Error('Account is blocked');
+    }
+    // Success — onAuthStateChanged will handle the rest
+  } catch(e){
+    console.error('Login error:', e);
+    showLoginMsg(e.message || 'Login failed');
+    btn.disabled = false;
+    btn.textContent = 'AUTHENTICATE';
+  }
+};
+
+function showLoginMsg(msg){
+  const el = $('loginMsg');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+// ============================================================
+// AUTH STATE HANDLER
+// ============================================================
+onAuthStateChanged(auth, async (user) => {
+  if(user){
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if(!snap.exists() || snap.data().role !== 'admin'){
+        await signOut(auth);
+        return;
+      }
+      adminUser = user;
+      adminData = { id: user.uid, ...snap.data() };
+
+      // Show loading briefly then enter app
+      $('loginScreen').classList.add('hidden');
+      $('loadingScreen').classList.remove('hidden');
+
+      setTimeout(() => {
+        $('loadingScreen').classList.add('hidden');
+        $('adminApp').classList.remove('hidden');
+        $('adminEmail').textContent = adminUser.email || '';
+        startRealtimeListeners();
+        goAdmin('dashboard');
+      }, 500);
+    } catch(e){
+      console.error('Auth state error:', e);
+      await signOut(auth);
+    }
+  } else {
+    adminUser = null;
+    adminData = null;
+    stopRealtimeListeners();
+    $('adminApp').classList.add('hidden');
+    $('loadingScreen').classList.add('hidden');
+    $('loginScreen').classList.remove('hidden');
+    $('loginBtn').disabled = false;
+    $('loginBtn').textContent = 'AUTHENTICATE';
+  }
+});
+
+// ============================================================
+// LOGOUT
+// ============================================================
+window.adminLogout = async function(){
+  const result = await Swal.fire({
+    title: 'Logout?',
+    text: 'You will be signed out of admin panel.',
+    icon: 'question',
+    showCancelButton: true,
+    background: '#0d1330',
+    color: '#fff',
+    confirmButtonColor: '#ff3b5c'
+  });
+  if(result.isConfirmed){
+    stopRealtimeListeners();
+    await signOut(auth);
+  }
+};
+
+// ============================================================
+// REALTIME LISTENERS (setup on login)
+// ============================================================
+function startRealtimeListeners(){
+  stopRealtimeListeners();
+
+  // Users
+  unsubscribers.push(
+    onSnapshot(collection(db, 'users'), (snap) => {
+      usersCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'users') renderUsers();
+      if(currentPage === 'dashboard') renderDashboard();
+    }, err => console.error('users listener:', err))
+  );
+
+  // Messages
+  const msgQ = query(collection(db, 'messages'), orderBy('at', 'desc'), limit(200));
+  unsubscribers.push(
+    onSnapshot(msgQ, (snap) => {
+      messagesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      updateMsgBadge();
+      if(currentPage === 'messages') renderMessagesAdmin();
+    }, err => console.error('messages listener:', err))
+  );
+
+  // Transactions
+  const txQ = query(collection(db, 'transactions'), orderBy('at', 'desc'), limit(200));
+  unsubscribers.push(
+    onSnapshot(txQ, (snap) => {
+      transactionsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'deposits') renderDeposits();
+      if(currentPage === 'withdrawals') renderWithdrawals();
+      if(currentPage === 'dashboard') renderDashboard();
+    }, err => console.error('transactions listener:', err))
+  );
+
+  // Tournaments
+  unsubscribers.push(
+    onSnapshot(collection(db, 'tournaments'), (snap) => {
+      tournamentsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'tournaments') renderTournamentsAdmin();
+      if(currentPage === 'dashboard') renderDashboard();
+    }, err => console.error('tournaments listener:', err))
+  );
+
+  // Notifications
+  const notifQ = query(collection(db, 'notifications'), orderBy('at', 'desc'), limit(100));
+  unsubscribers.push(
+    onSnapshot(notifQ, (snap) => {
+      notificationsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'notifications') renderNotificationsAdmin();
+    }, err => console.error('notifications listener:', err))
+  );
+}
+
+function stopRealtimeListeners(){
+  unsubscribers.forEach(u => { try { u(); } catch(e){} });
+  unsubscribers = [];
+}
+
+// ============================================================
+// ROUTER (placeholder pages — will be built in Part 2+)
+// ============================================================
+window.goAdmin = function(page){
+  if(!adminUser) return;
+  currentPage = page;
+  document.querySelectorAll('.nav-item[data-page]').forEach(el=>{
+    el.classList.toggle('active', el.dataset.page === page);
+  });
+  const pt = $('pageTitle'); if(pt) pt.textContent = page.toUpperCase();
+
+  const map = {
+    dashboard: renderDashboard,
+    users: renderUsers,
+    messages: renderMessagesAdmin,
+    tournaments: renderTournamentsAdmin,
+    results: renderResultsAdmin,
+    deposits: renderDeposits,
+    withdrawals: renderWithdrawals,
+    modes: renderModes,
+    banners: renderBanners,
+    notifications: renderNotificationsAdmin,
+    audit: renderAudit
+  };
+
+  $('adminMain').innerHTML = '';
+  const fn = map[page];
+  if(fn) fn();
+  else $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Page "${page}" coming in next Part</div>`;
+  updateMsgBadge();
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+
+window.toggleMobileNav = function(){
+  $('mobileNav').classList.toggle('hidden');
+};
+
+// ============================================================
+// PLACEHOLDER RENDERERS (Part 2-5 এ পূর্ণ হবে)
+// ============================================================
+function renderDashboard(){
+  $('adminMain').innerHTML = `<div class="page glass card p-8 text-center">
+    <div class="text-4xl mb-3">📊</div>
+    <div class="font-game text-cyan-300">DASHBOARD</div>
+    <div class="text-xs text-slate-400 mt-2">Coming in Part 2</div>
+    <div class="text-[10px] text-slate-500 mt-4">Users loaded: ${usersCache.length}</div>
+  </div>`;
+}
+function renderUsers(){ $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Users — Part 3</div>`; }
+function renderMessagesAdmin(){ $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Messages — Part 3</div>`; }
+function renderTournamentsAdmin(){ $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Tournaments — Part 4</div>`; }
+function renderResultsAdmin(){ $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Results — Part 5</div>`; }
+function renderDeposits(){ $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Deposits — Part 4</div>`; }
+function renderWithdrawals(){ $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Withdrawals — Part 4</div>`; }
+function renderModes(){ $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Game Modes — Part 5</div>`; }
+function renderBanners(){ $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Banners — Part 5</div>`; }
+function renderNotificationsAdmin(){ $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Notifications — Part 5</div>`; }
+function renderAudit(){ $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Audit Log — Part 5</div>`; }
+
+// ============================================================
+// BADGE UPDATER
+// ============================================================
+function updateMsgBadge(){
+  const unread = messagesCache.filter(m => m.from === 'user' && !m.read).length;
+  const badge = $('msgNavBadge');
+  if(badge){
+    if(unread > 0){ badge.textContent = unread; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
+  }
+}
+</script>
+
+</body>
+</html>
