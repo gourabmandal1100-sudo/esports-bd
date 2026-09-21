@@ -705,8 +705,7 @@ function renderTournamentsAdmin(){
     </div>
   `;
 }
-
-function tournamentAdminCard(t){
+  function tournamentAdminCard(t){
   const filled = (t.players||[]).length;
   const total = t.slots?.total || 48;
   const statusColor = t.status==='upcoming'?'text-cyan-300':t.status==='ongoing'?'text-red-300':'text-slate-400';
@@ -729,6 +728,79 @@ function tournamentAdminCard(t){
       ` : `
         <div class="text-[9px] text-orange-300 mt-1">⚠ Room not set</div>
       `}
+      <div class="flex gap-1 flex-wrap mt-2">
+        <button onclick="openRoomDialog('${t.id}')" class="btn px-2 py-1 text-[9px] bg-yellow-500/20 text-yellow-300">${roomSet?'Edit Room':'Set Room'}</button>
+        <button onclick="updateTournamentStatus('${t.id}','upcoming')" class="btn px-2 py-1 text-[9px] bg-cyan-500/20 text-cyan-300">U</button>
+        <button onclick="updateTournamentStatus('${t.id}','ongoing')" class="btn px-2 py-1 text-[9px] bg-red-500/20 text-red-300">O</button>
+        <button onclick="updateTournamentStatus('${t.id}','completed')" class="btn px-2 py-1 text-[9px] bg-slate-500/20 text-slate-300">C</button>
+        <button onclick="deleteTournament('${t.id}')" class="btn px-2 py-1 text-[9px] bg-red-500/30 text-red-200">🗑</button>
+      </div>
+    </div>
+  `;
+  }
+window.openRoomDialog = async function(id){
+  const t = tournamentsCache.find(x => x.id === id);
+  if(!t) return;
+
+  const { value: formValues } = await Swal.fire({
+    title: 'Set Room Details',
+    html: `
+      <div style="text-align:left; font-size:13px; padding:0 8px;">
+        <label style="color:#8ea0cc;font-size:11px;display:block;margin-bottom:4px;">Room Time (e.g., 9:30 PM)</label>
+        <input id="swRoomTime" class="swal2-input" placeholder="9:30 PM" value="${(t.room?.time||'').replace(/"/g,'&quot;')}">
+        <label style="color:#8ea0cc;font-size:11px;display:block;margin-top:8px;margin-bottom:4px;">Room ID</label>
+        <input id="swRoomId" class="swal2-input" placeholder="123456789" value="${(t.room?.id||'').replace(/"/g,'&quot;')}">
+        <label style="color:#8ea0cc;font-size:11px;display:block;margin-top:8px;margin-bottom:4px;">Room Password</label>
+        <input id="swRoomPass" class="swal2-input" placeholder="abc123" value="${(t.room?.password||'').replace(/"/g,'&quot;')}">
+      </div>
+    `,
+    background: '#0d1330',
+    color: '#fff',
+    showCancelButton: true,
+    confirmButtonText: 'Save Room',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#00e5ff',
+    preConfirm: () => {
+      const time = document.getElementById('swRoomTime').value.trim();
+      const roomId = document.getElementById('swRoomId').value.trim();
+      const password = document.getElementById('swRoomPass').value.trim();
+      if(!roomId || !password){
+        Swal.showValidationMessage('Room ID and Password are required');
+        return false;
+      }
+      return { time, roomId, password };
+    }
+  });
+
+  if(!formValues) return;
+
+  try {
+    await updateDoc(doc(db, 'tournaments', id), {
+      'room.time': formValues.time,
+      'room.id': formValues.roomId,
+      'room.password': formValues.password,
+      roomUpdatedAt: serverTimestamp()
+    });
+    await audit('ROOM_SET', 'tournament', id);
+    Swal.fire({
+      icon: 'success',
+      title: 'Room saved!',
+      background: '#0d1330',
+      color: '#fff',
+      timer: 1500,
+      showConfirmButton: false
+    });
+  } catch(e){
+    console.error('Room save error:', e);
+    Swal.fire({
+      icon: 'error',
+      title: 'Failed to save',
+      text: e.message,
+      background: '#0d1330',
+      color: '#fff'
+    });
+  }
+};      `}
       <div class="flex gap-1 flex-wrap mt-2">
         <button onclick="openRoomDialog('${t.id}')" class="btn px-2 py-1 text-[9px] bg-yellow-500/20 text-yellow-300">${roomSet?'Edit Room':'Set Room'}</button>
         <button onclick="updateTournamentStatus('${t.id}','upcoming')" class="btn px-2 py-1 text-[9px] bg-cyan-500/20 text-cyan-300">U</button>
