@@ -43,7 +43,8 @@
   .conv-item.active{background:linear-gradient(90deg, rgba(0,229,255,.15), rgba(168,85,247,.1));border-color:rgba(0,229,255,.4);}
 </style>
 </head>
-<body><!-- ================= LOGIN ================= -->
+<body>
+  <!-- ================= LOGIN ================= -->
 <div id="loginScreen" class="min-h-screen flex items-center justify-center p-5">
   <div class="glass card p-8 w-full max-w-md glow-cyan">
     <div class="text-center mb-6">
@@ -97,7 +98,8 @@
       <button onclick="adminLogout()" class="btn w-full py-2 text-sm bg-red-500/20 text-red-300">LOGOUT</button>
     </div>
   </aside>
-    <!-- MOBILE TOP NAV -->
+
+  <!-- MOBILE TOP NAV -->
   <div class="md:hidden fixed top-0 left-0 right-0 z-40 glass border-b border-cyan-500/20">
     <div class="flex items-center justify-between px-3 py-2">
       <div class="font-game text-sm text-cyan-300">E-SPORTS BD ADMIN</div>
@@ -111,6 +113,8 @@
       <div class="nav-item" onclick="goAdmin('results');toggleMobileNav()">📋 Res</div>
       <div class="nav-item" onclick="goAdmin('deposits');toggleMobileNav()">💰 Dep</div>
       <div class="nav-item" onclick="goAdmin('withdrawals');toggleMobileNav()">💸 Wd</div>
+      <div class="nav-item" onclick="goAdmin('modes');toggleMobileNav()">🎮 Modes</div>
+      <div class="nav-item" onclick="goAdmin('banners');toggleMobileNav()">🖼️ Ban</div>
       <div class="nav-item" onclick="goAdmin('notifications');toggleMobileNav()">🔔 Noti</div>
       <div class="nav-item" onclick="goAdmin('audit');toggleMobileNav()">📜 Log</div>
     </div>
@@ -128,7 +132,6 @@
     <div id="adminMain" class="p-5"></div>
   </main>
 </div>
-
 <script type="module">
 /* ============================================================
    E-SPORTS BD — ADMIN PANEL (Firebase)
@@ -151,10 +154,14 @@ let messagesCache = [];
 let transactionsCache = [];
 let tournamentsCache = [];
 let notificationsCache = [];
+let auditCache = [];
+let gameModesCache = [];
+let bannersCache = [];
 let activeChatUserId = null;
 let unsubscribers = [];
 
 const $ = id => document.getElementById(id);
+
 // ==================== LOGIN ====================
 window.doAdminLogin = async function(){
   const email = $('adminUser').value.trim();
@@ -303,6 +310,28 @@ function startRealtimeListeners(){
       if(currentPage === 'notifications') renderNotificationsAdmin();
     }, err => console.error('notifications listener:', err))
   );
+
+  const auditQ = query(collection(db, 'auditLogs'), orderBy('at', 'desc'), limit(200));
+  unsubscribers.push(
+    onSnapshot(auditQ, (snap) => {
+      auditCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'audit') renderAudit();
+    }, err => console.error('audit listener:', err))
+  );
+
+  unsubscribers.push(
+    onSnapshot(collection(db, 'gameModes'), (snap) => {
+      gameModesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'modes') renderModes();
+    }, err => console.error('gameModes listener:', err))
+  );
+
+  unsubscribers.push(
+    onSnapshot(collection(db, 'banners'), (snap) => {
+      bannersCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'banners') renderBanners();
+    }, err => console.error('banners listener:', err))
+  );
 }
 
 function stopRealtimeListeners(){
@@ -384,7 +413,8 @@ function stat(label, value, color){
     <div class="text-[10px] text-slate-400 uppercase tracking-wider">${label}</div>
     <div class="font-game text-xl mt-1 ${color} neon-text">${value}</div>
   </div>`;
-        }  // ==================== USERS ====================
+}
+  // ==================== USERS ====================
 function renderUsers(){
   $('adminMain').innerHTML = `
     <div class="page glass card p-4">
@@ -641,74 +671,224 @@ function scrollChatToBottom(){
     const el = $('chatThread');
     if(el) el.scrollTop = el.scrollHeight;
   }, 100);
-      }
-  // ==================== TOURNAMENTS ====================
-function renderTournamentsAdmin()function renderTournamentsAdmin(){
-  $('adminMain').innerHTML = `<div class="page glass card p-8 text-center">
-    <div class="text-3xl mb-3">🏆</div>
-    <div class="font-game text-cyan-300">TOURNAMENTS</div>
-    <div class="text-xs text-slate-400 mt-2">Loaded: ${tournamentsCache.length}</div>
-    <div class="text-[10px] text-slate-500 mt-4">Full CRUD coming soon</div>
-  </div>`;
 }
 
-function renderResultsAdmin(){
-  $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Results — coming soon</div>`;
-}
-}
-
-function renderResultsAdmin(){
-  $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Results — coming soon</div>`;
-}
-
-// ==================== DEPOSITS ====================
-function renderDeposits(){
-  const pending = transactionsCache.filter(t => t.type === 'deposit_request' && t.status === 'pending');
+// ==================== TOURNAMENTS ====================
+function renderTournamentsAdmin(){
   $('adminMain').innerHTML = `
-    <div class="page glass card p-4">
-      <div class="font-game text-sm text-cyan-300 mb-3">💰 PENDING DEPOSITS (${pending.length})</div>
-      ${pending.length ? `<div class="overflow-x-auto"><table>
-        <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th><th>Actions</th></tr></thead>
-        <tbody>${pending.map(t => {
-          const u = usersCache.find(x => x.id === t.userId);
-          return `<tr>
-            <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
-            <td class="text-yellow-300 font-bold">৳${fmt(t.amount||0)}</td>
-            <td class="text-xs">${escapeHtml(t.method||'-')}</td>
-            <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
-            <td>
-              <button onclick="approveDeposit('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
-              <button onclick="rejectDeposit('${t.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/20 text-red-300">Reject</button>
-            </td>
-          </tr>`;
-        }).join('')}</tbody>
-      </table></div>` : `<div class="text-slate-400 text-sm text-center py-6">No pending deposits</div>`}
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🏆 CREATE TOURNAMENT</div>
+        <input id="tTitle" class="input mb-2" placeholder="Title (e.g., BR Solo Match)"/>
+        <select id="tMode" class="input mb-2">
+          <option value="br">BR Match</option>
+          <option value="duo">Duo BR</option>
+          <option value="pro">Pro League</option>
+          <option value="surv">Survival</option>
+          <option value="cs4">CS 4v4</option>
+          <option value="clash">Clash Squad</option>
+          <option value="head">Headshot</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input id="tFee" type="number" class="input mb-2" placeholder="Entry Fee (৳)" value="20"/>
+        <input id="tPrize" type="number" class="input mb-2" placeholder="Prize Pool (৳)" value="500"/>
+        <input id="tSlots" type="number" class="input mb-2" placeholder="Total Slots" value="48"/>
+        <input id="tStart" type="datetime-local" class="input mb-2"/>
+        <button onclick="createTournament()" class="btn w-full py-2 bg-cyan-500 text-black">CREATE</button>
+      </div>
+
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 ALL TOURNAMENTS (${tournamentsCache.length})</div>
+        ${tournamentsCache.length ? tournamentsCache.map(t => tournamentAdminCard(t)).join('') :
+          `<div class="text-slate-400 text-xs text-center py-6">No tournaments yet</div>`}
+      </div>
     </div>
   `;
 }
 
-// ==================== WITHDRAWALS ====================
-function renderWithdrawals(){
-  const pending = transactionsCache.filter(t => t.type === 'withdrawal_request' && t.status === 'pending');
+function tournamentAdminCard(t){
+  const filled = (t.players||[]).length;
+  const total = t.slots?.total || 48;
+  const statusColor = t.status==='upcoming'?'text-cyan-300':t.status==='ongoing'?'text-red-300':'text-slate-400';
+  return `
+    <div class="p-3 rounded-lg bg-white/5 border border-white/10 mb-2">
+      <div class="flex justify-between items-start">
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-xs">${escapeHtml(t.title||'-')}</div>
+          <div class="text-[10px] text-slate-400 mt-1">${escapeHtml(t.mode||'-')} • Entry: ৳${fmt(t.entryFee||0)} • Prize: ৳${fmt(t.prizePool||0)}</div>
+          <div class="text-[10px] mt-1">
+            <span class="${statusColor} font-semibold">${(t.status||'upcoming').toUpperCase()}</span>
+            • Slots: ${filled}/${total}
+          </div>
+        </div>
+        <div class="flex gap-1">
+          <button onclick="updateTournamentStatus('${t.id}','upcoming')" class="btn px-2 py-1 text-[9px] bg-cyan-500/20 text-cyan-300">U</button>
+          <button onclick="updateTournamentStatus('${t.id}','ongoing')" class="btn px-2 py-1 text-[9px] bg-red-500/20 text-red-300">O</button>
+          <button onclick="updateTournamentStatus('${t.id}','completed')" class="btn px-2 py-1 text-[9px] bg-slate-500/20 text-slate-300">C</button>
+          <button onclick="deleteTournament('${t.id}')" class="btn px-2 py-1 text-[9px] bg-red-500/30 text-red-200">🗑</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.createTournament = async function(){
+  const title = $('tTitle').value.trim();
+  const mode = $('tMode').value;
+  const entryFee = Number($('tFee').value) || 0;
+  const prizePool = Number($('tPrize').value) || 0;
+  const slotsTotal = Number($('tSlots').value) || 48;
+  const startAt = $('tStart').value;
+
+  if(!title){ Swal.fire({icon:'warning', title:'Title required', background:'#0d1330', color:'#fff'}); return; }
+  if(!startAt){ Swal.fire({icon:'warning', title:'Start time required', background:'#0d1330', color:'#fff'}); return; }
+
+  try {
+    await addDoc(collection(db, 'tournaments'), {
+      title, mode, entryFee, prizePool,
+      slots: { total: slotsTotal, filled: 0 },
+      players: [],
+      startAt: new Date(startAt).toISOString(),
+      status: 'upcoming',
+      createdAt: serverTimestamp(),
+      createdBy: adminUser.uid
+    });
+    await audit('TOURNAMENT_CREATE', 'tournament', title);
+    $('tTitle').value = '';
+    $('tStart').value = '';
+    Swal.fire({icon:'success', title:'Tournament created!', background:'#0d1330', color:'#fff', timer:1500, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+window.updateTournamentStatus = async function(id, status){
+  try {
+    await updateDoc(doc(db, 'tournaments', id), { status });
+    await audit('TOURNAMENT_STATUS', 'tournament', id);
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+window.deleteTournament = async function(id){
+  const r = await Swal.fire({
+    title:'Delete tournament?', text:'This cannot be undone.',
+    icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await deleteDoc(doc(db, 'tournaments', id));
+    await audit('TOURNAMENT_DELETE', 'tournament', id);
+    Swal.fire({icon:'success', title:'Deleted', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+// ==================== RESULTS ====================
+function renderResultsAdmin(){
   $('adminMain').innerHTML = `
-    <div class="page glass card p-4">
-      <div class="font-game text-sm text-cyan-300 mb-3">💸 PENDING WITHDRAWALS (${pending.length})</div>
-      ${pending.length ? `<div class="overflow-x-auto"><table>
-        <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th><th>Actions</th></tr></thead>
-        <tbody>${pending.map(t => {
-          const u = usersCache.find(x => x.id === t.userId);
-          return `<tr>
-            <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
-            <td class="text-red-300 font-bold">৳${fmt(Math.abs(t.amount||0))}</td>
-            <td class="text-xs">${escapeHtml(t.method||'-')}</td>
-            <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
-            <td>
-              <button onclick="approveWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
-              <button onclick="rejectWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/20 text-red-300">Reject</button>
-            </td>
-          </tr>`;
-        }).join('')}</tbody>
-      </table></div>` : `<div class="text-slate-400 text-sm text-center py-6">No pending withdrawals</div>`}
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 PUBLISH RESULT</div>
+        <select id="rTournament" class="input mb-2">
+          <option value="">— Select Tournament —</option>
+          ${tournamentsCache.map(t => `<option value="${t.id}">${escapeHtml(t.title||'-')}</option>`).join('')}
+        </select>
+        <input id="rWinner1" class="input mb-2" placeholder="1st Place (username / FF IGN)"/>
+        <input id="rPrize1" type="number" class="input mb-2" placeholder="1st Prize (৳)"/>
+        <input id="rWinner2" class="input mb-2" placeholder="2nd Place (optional)"/>
+        <input id="rPrize2" type="number" class="input mb-2" placeholder="2nd Prize (optional)"/>
+        <input id="rWinner3" class="input mb-2" placeholder="3rd Place (optional)"/>
+        <input id="rPrize3" type="number" class="input mb-2" placeholder="3rd Prize (optional)"/>
+        <button onclick="publishResult()" class="btn w-full py-2 bg-cyan-500 text-black">PUBLISH RESULT</button>
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🏆 RECENT RESULTS</div>
+        <div class="text-slate-400 text-xs text-center py-6">Results will appear here</div>
+      </div>
+    </div>
+  `;
+}
+
+window.publishResult = async function(){
+  const tId = $('rTournament').value;
+  if(!tId){ Swal.fire({icon:'warning', title:'Select a tournament', background:'#0d1330', color:'#fff'}); return; }
+  const t = tournamentsCache.find(x => x.id === tId);
+  const w1 = $('rWinner1').value.trim();
+  const p1 = Number($('rPrize1').value) || 0;
+  const w2 = $('rWinner2').value.trim();
+  const p2 = Number($('rPrize2').value) || 0;
+  const w3 = $('rWinner3').value.trim();
+  const p3 = Number($('rPrize3').value) || 0;
+
+  if(!w1 || !p1){ Swal.fire({icon:'warning', title:'1st place required', background:'#0d1330', color:'#fff'}); return; }
+
+  try {
+    const winners = [{ rank:1, name:w1, prize:p1 }];
+    if(w2 && p2) winners.push({ rank:2, name:w2, prize:p2 });
+    if(w3 && p3) winners.push({ rank:3, name:w3, prize:p3 });
+
+    await addDoc(collection(db, 'results'), {
+      tournamentId: tId,
+      tournamentName: t?.title || '',
+      winners,
+      at: serverTimestamp(),
+      publishedBy: adminUser.uid
+    });
+    await updateDoc(doc(db, 'tournaments', tId), { status:'completed' });
+    await audit('RESULT_PUBLISH', 'result', tId);
+    $('rWinner1').value = ''; $('rPrize1').value = '';
+    $('rWinner2').value = ''; $('rPrize2').value = '';
+    $('rWinner3').value = ''; $('rPrize3').value = '';
+    Swal.fire({icon:'success', title:'Result published!', background:'#0d1330', color:'#fff', timer:1500, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+  // ==================== DEPOSITS ====================
+function renderDeposits(){
+  const pending = transactionsCache.filter(t => t.type === 'deposit_request' && t.status === 'pending');
+  const completed = transactionsCache.filter(t => t.type === 'deposit' && t.status === 'completed').slice(0, 20);
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">💰 PENDING DEPOSITS (${pending.length})</div>
+        ${pending.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th><th>Actions</th></tr></thead>
+          <tbody>${pending.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-yellow-300 font-bold">৳${fmt(t.amount||0)}</td>
+              <td class="text-xs">${escapeHtml(t.method||'-')}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+              <td>
+                <button onclick="approveDeposit('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
+                <button onclick="rejectDeposit('${t.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/20 text-red-300">Reject</button>
+              </td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-sm text-center py-6">No pending deposits</div>`}
+      </div>
+
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">✅ RECENT DEPOSITS (${completed.length})</div>
+        ${completed.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th></tr></thead>
+          <tbody>${completed.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-green-300 font-bold">৳${fmt(t.amount||0)}</td>
+              <td class="text-xs">${escapeHtml(t.method||'-')}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-xs text-center py-4">No completed deposits</div>`}
+      </div>
     </div>
   `;
 }
@@ -755,6 +935,50 @@ window.rejectDeposit = async function(txId){
   } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
 };
 
+// ==================== WITHDRAWALS ====================
+function renderWithdrawals(){
+  const pending = transactionsCache.filter(t => t.type === 'withdrawal_request' && t.status === 'pending');
+  const completed = transactionsCache.filter(t => t.type === 'withdrawal' && t.status === 'completed').slice(0, 20);
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">💸 PENDING WITHDRAWALS (${pending.length})</div>
+        ${pending.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th><th>Actions</th></tr></thead>
+          <tbody>${pending.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-red-300 font-bold">৳${fmt(Math.abs(t.amount||0))}</td>
+              <td class="text-xs">${escapeHtml(t.method||'-')}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+              <td>
+                <button onclick="approveWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
+                <button onclick="rejectWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/20 text-red-300">Reject</button>
+              </td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-sm text-center py-6">No pending withdrawals</div>`}
+      </div>
+
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">✅ RECENT WITHDRAWALS (${completed.length})</div>
+        ${completed.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Time</th></tr></thead>
+          <tbody>${completed.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-red-300 font-bold">৳${fmt(Math.abs(t.amount||0))}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-xs text-center py-4">No completed withdrawals</div>`}
+      </div>
+    </div>
+  `;
+}
+
 window.approveWithdrawal = async function(txId){
   const t = transactionsCache.find(x => x.id === txId);
   if(!t) return;
@@ -796,10 +1020,7 @@ window.rejectWithdrawal = async function(txId){
   } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
 };
 
-// ==================== MODES + BANNERS ====================
-function renderModes()// ==================== GAME MODES ====================
-let gameModesCache = [];
-
+// ==================== GAME MODES ====================
 function renderModes(){
   $('adminMain').innerHTML = `
     <div class="page space-y-4">
@@ -811,7 +1032,7 @@ function renderModes(){
       </div>
       <div class="glass card p-4">
         <div class="font-game text-sm text-cyan-300 mb-3">📋 GAME MODES (${gameModesCache.length})</div>
-        <div id="gmList" class="space-y-2">
+        <div class="space-y-2">
           ${gameModesCache.length ? gameModesCache.map(m => gameModeRow(m)).join('') :
             `<div class="text-slate-400 text-xs text-center py-6">No modes yet</div>`}
         </div>
@@ -866,8 +1087,6 @@ window.deleteGameMode = async function(id){
 };
 
 // ==================== BANNERS ====================
-let bannersCache = [];
-
 function renderBanners(){
   $('adminMain').innerHTML = `
     <div class="page space-y-4">
@@ -942,9 +1161,7 @@ window.deleteBanner = async function(id){
     await deleteDoc(doc(db, 'banners', id));
     await audit('BANNER_DELETE', 'banner', id);
   } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
-};){
-  $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Banners — coming soon</div>`;
-}
+};
 
 // ==================== NOTIFICATIONS ====================
 function renderNotificationsAdmin(){
@@ -996,9 +1213,7 @@ window.sendNotification = async function(){
     Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
   }
 };
-// ==================== AUDIT LOG ====================
-let auditCache = [];
-
+  // ==================== AUDIT LOG ====================
 function renderAudit(){
   $('adminMain').innerHTML = `
     <div class="page glass card p-4">
