@@ -44,7 +44,8 @@
 </style>
 </head>
 <body>
-  <!-- ================= LOGIN ================= -->
+
+<!-- ================= LOGIN ================= -->
 <div id="loginScreen" class="min-h-screen flex items-center justify-center p-5">
   <div class="glass card p-8 w-full max-w-md glow-cyan">
     <div class="text-center mb-6">
@@ -70,7 +71,6 @@
     <p class="text-cyan-300 mt-4 text-sm">Verifying admin access...</p>
   </div>
 </div>
-
 <!-- ================= ADMIN DASHBOARD ================= -->
 <div id="adminApp" class="hidden min-h-screen flex">
 
@@ -132,9 +132,10 @@
     <div id="adminMain" class="p-5"></div>
   </main>
 </div>
+
 <script type="module">
 /* ============================================================
-   E-SPORTS BD — ADMIN PANEL (Firebase)
+   E-SPORTS BD — ADMIN PANEL (Firebase Version)
    ============================================================ */
 
 import {
@@ -146,6 +147,7 @@ import {
   fmt, bdt, escapeHtml, shortTime
 } from './firebase-config.js';
 
+// ==================== GLOBAL STATE ====================
 let adminUser = null;
 let adminData = null;
 let currentPage = 'dashboard';
@@ -161,8 +163,7 @@ let activeChatUserId = null;
 let unsubscribers = [];
 
 const $ = id => document.getElementById(id);
-
-// ==================== LOGIN ====================
+  // ==================== LOGIN ====================
 window.doAdminLogin = async function(){
   const email = $('adminUser').value.trim();
   const pass = $('adminPass').value;
@@ -220,6 +221,7 @@ onAuthStateChanged(auth, async (user) => {
       }
       adminUser = user;
       adminData = { id: user.uid, ...snap.data() };
+
       $('loginScreen').classList.add('hidden');
       $('loadingScreen').classList.remove('hidden');
 
@@ -413,7 +415,7 @@ function stat(label, value, color){
     <div class="text-[10px] text-slate-400 uppercase tracking-wider">${label}</div>
     <div class="font-game text-xl mt-1 ${color} neon-text">${value}</div>
   </div>`;
-}
+  }
   // ==================== USERS ====================
 function renderUsers(){
   $('adminMain').innerHTML = `
@@ -426,4 +428,890 @@ function renderUsers(){
           </thead>
           <tbody id="usersBody">
             ${usersCache.length ? usersCache.map(u => userRow(u)).join('') :
-              `<tr><td colspan="6" class="text-center text-sl
+              `<tr><td colspan="6" class="text-center text-slate-400 py-6">No users yet</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function userRow(u){
+  const bal = (u.wallet?.available||0) + (u.wallet?.winning||0);
+  const search = `${u.username||''} ${u.email||''} ${u.phone||''} ${u.ffUid||''} ${u.userCode||''}`.toLowerCase();
+  return `
+    <tr data-search="${escapeHtml(search)}">
+      <td>
+        <div class="flex items-center gap-2">
+          <img src="${u.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=x'}" class="w-8 h-8 rounded-full"/>
+          <div>
+            <div class="font-semibold text-xs">${escapeHtml(u.username||'-')}</div>
+            <div class="text-[10px] text-slate-400">${escapeHtml(u.userCode||'-')}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="text-xs">${escapeHtml(u.email||'-')}</div>
+        <div class="text-[10px] text-slate-400">${escapeHtml(u.phone||'-')}</div>
+      </td>
+      <td>
+        <div class="text-xs">${escapeHtml(u.ffIgn||'-')}</div>
+        <div class="text-[10px] text-slate-400">${escapeHtml(u.ffUid||'-')}</div>
+      </td>
+      <td class="text-yellow-300 font-bold">${bdt(bal)}</td>
+      <td>
+        <span class="badge ${u.blocked?'bg-red-500/20 text-red-300':'bg-green-500/20 text-green-300'}">
+          ${u.blocked?'BLOCKED':'ACTIVE'}
+        </span>
+      </td>
+      <td>
+        <div class="flex gap-1 flex-wrap">
+          <button onclick="viewUser('${u.id}')" class="btn px-2 py-1 text-[10px] bg-cyan-500/20 text-cyan-300">View</button>
+          <button onclick="toggleBlock('${u.id}')" class="btn px-2 py-1 text-[10px] ${u.blocked?'bg-green-500/20 text-green-300':'bg-red-500/20 text-red-300'}">${u.blocked?'Unblock':'Block'}</button>
+          <button onclick="openChat('${u.id}')" class="btn px-2 py-1 text-[10px] bg-purple-500/20 text-purple-300">Msg</button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+window.filterUsers = function(){
+  const q = ($('userSearch').value || '').toLowerCase();
+  document.querySelectorAll('#usersBody tr').forEach(tr=>{
+    const hay = tr.dataset.search||'';
+    tr.style.display = hay.includes(q) ? '' : 'none';
+  });
+};
+
+window.toggleBlock = async function(id){
+  const u = usersCache.find(x => x.id === id);
+  if(!u) return;
+  const isBlocking = !u.blocked;
+  const result = await Swal.fire({
+    title: isBlocking ? 'Block user?' : 'Unblock user?',
+    text: `${u.username||'User'} will be ${isBlocking?'blocked':'unblocked'}.`,
+    icon: 'warning', showCancelButton: true,
+    background: '#0d1330', color: '#fff',
+    confirmButtonColor: isBlocking ? '#ff3b5c' : '#22ff88'
+  });
+  if(!result.isConfirmed) return;
+  try {
+    await updateDoc(doc(db, 'users', id), { blocked: !u.blocked });
+    await audit(isBlocking?'USER_BLOCK':'USER_UNBLOCK', 'user', id);
+    Swal.fire({icon:'success', title:'Done', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+window.viewUser = function(id){
+  const u = usersCache.find(x => x.id === id);
+  if(!u) return;
+  const txs = transactionsCache.filter(t => t.userId === id).slice(0,10);
+  Swal.fire({
+    title: escapeHtml(u.username || 'User'),
+    width: 440,
+    html: `
+      <div style="text-align:left; font-size:12px; color:#cbd5ff">
+        <div><b>ID:</b> ${escapeHtml(u.userCode||'-')}</div>
+        <div><b>Email:</b> ${escapeHtml(u.email||'-')}</div>
+        <div><b>Phone:</b> ${escapeHtml(u.phone||'-')}</div>
+        <div><b>FF UID:</b> ${escapeHtml(u.ffUid||'-')}</div>
+        <div><b>FF IGN:</b> ${escapeHtml(u.ffIgn||'-')}</div>
+        <div><b>Wallet:</b> ৳${fmt((u.wallet?.available||0)+(u.wallet?.winning||0))}</div>
+        <div style="opacity:.7">Available: ৳${fmt(u.wallet?.available||0)} • Winning: ৳${fmt(u.wallet?.winning||0)}</div>
+        <div><b>Matches:</b> ${u.stats?.matches||0} • <b>Wins:</b> ${u.stats?.wins||0}</div>
+        <hr style="margin:8px 0;border-color:#20305e"/>
+        <div><b>Recent Transactions:</b></div>
+        ${txs.length ? txs.map(t=>`<div style="padding:3px 0;border-bottom:1px solid rgba(120,160,255,.1)">
+          ${escapeHtml(t.type||'-')} • ৳${fmt(Math.abs(t.amount||0))} • <span style="opacity:.7">${escapeHtml(t.status||'-')}</span>
+        </div>`).join('') : '<div style="opacity:.7">None</div>'}
+      </div>`,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#00e5ff'
+  });
+};
+
+window.openChat = function(userId){
+  activeChatUserId = userId;
+  goAdmin('messages');
+};
+
+// ==================== MESSAGES ====================
+function renderMessagesAdmin(){
+  const users = usersCache;
+  const unreadByUser = {};
+  messagesCache.filter(m => m.from === 'user' && !m.read).forEach(m=>{
+    unreadByUser[m.userId] = (unreadByUser[m.userId]||0) + 1;
+  });
+
+  const sortedUsers = [...users].sort((a,b) => {
+    const aLast = messagesCache.find(m => m.userId===a.id)?.at;
+    const bLast = messagesCache.find(m => m.userId===b.id)?.at;
+    if(!aLast && !bLast) return 0;
+    if(!aLast) return 1;
+    if(!bLast) return -1;
+    return (bLast?.seconds||0) - (aLast?.seconds||0);
+  });
+
+  $('adminMain').innerHTML = `
+    <div class="page grid md:grid-cols-3 gap-4">
+      <div class="glass card p-3 md:col-span-1">
+        <div class="font-game text-sm text-cyan-300 neon-text mb-3">💬 CONVERSATIONS</div>
+        <input id="msgSearch" oninput="filterMsgUsers()" class="input mb-3" placeholder="🔍 Search user"/>
+        <div id="msgUserList" class="space-y-2 overflow-y-auto" style="max-height:65vh">
+          ${sortedUsers.length ? sortedUsers.map(u => {
+            const last = messagesCache.filter(m=>m.userId===u.id)[0];
+            const unread = unreadByUser[u.id] || 0;
+            return `
+              <div class="conv-item msg-user-row ${activeChatUserId===u.id?'active':''}"
+                   data-search="${escapeHtml(((u.username||'')+' '+(u.userCode||'')).toLowerCase())}"
+                   onclick="openChat('${u.id}')">
+                <div class="flex items-center gap-2">
+                  <img src="${u.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=x'}" class="w-9 h-9 rounded-full"/>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <div class="font-semibold text-xs truncate">${escapeHtml(u.username||'-')}</div>
+                      ${unread?`<span class="badge bg-red-500/30 text-red-300">${unread}</span>`:''}
+                    </div>
+                    <div class="text-[10px] text-slate-400 truncate">${last?escapeHtml((last.text||'').slice(0,40)):'No messages yet'}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('') : `<div class="text-slate-400 text-xs text-center py-6">No users yet</div>`}
+        </div>
+      </div>
+
+      <div class="glass card p-3 md:col-span-2 flex flex-col" style="min-height:70vh">
+        ${activeChatUserId ? renderChatPanel() : `
+          <div class="flex-1 flex items-center justify-center text-slate-400 text-sm">
+            👈 Select a user to start chatting
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+  scrollChatToBottom();
+}
+
+function renderChatPanel(){
+  const u = usersCache.find(x => x.id === activeChatUserId);
+  if(!u) return `<div class="text-slate-400 text-center py-8">User not found</div>`;
+  const msgs = messagesCache
+    .filter(m => m.userId === activeChatUserId)
+    .sort((a,b) => (a.at?.seconds||0) - (b.at?.seconds||0));
+
+  return `
+    <div class="flex items-center gap-2 pb-3 border-b border-white/10">
+      <img src="${u.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=x'}" class="w-10 h-10 rounded-full"/>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm truncate">${escapeHtml(u.username||'-')}</div>
+        <div class="text-[10px] text-slate-400">${escapeHtml(u.email||'-')}</div>
+      </div>
+      <button onclick="viewUser('${u.id}')" class="btn px-2 py-1 text-[10px] bg-cyan-500/20 text-cyan-300">View</button>
+    </div>
+
+    <div id="chatThread" class="chat-thread flex-1 my-3">
+      ${msgs.length ? msgs.map(m => chatBubble(m)).join('') : `
+        <div class="text-slate-400 text-xs text-center py-6">No messages yet. Send a greeting!</div>
+      `}
+    </div>
+
+    <div class="flex gap-2 pt-3 border-t border-white/10">
+      <input id="msgInput" class="input flex-1" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendAdminMsg()"/>
+      <button onclick="sendAdminMsg()" class="btn px-4 py-2 bg-cyan-500 text-black">Send</button>
+    </div>
+  `;
+}
+
+function chatBubble(m){
+  const isAdmin = m.from === 'admin';
+  return `
+    <div style="align-self:${isAdmin?'flex-end':'flex-start'}; max-width:75%">
+      <div class="msg-bubble ${isAdmin?'msg-admin':'msg-user'}">${escapeHtml(m.text||'')}</div>
+      <div class="msg-meta" style="text-align:${isAdmin?'right':'left'}">
+        ${isAdmin?'You':'User'} • ${shortTime(m.at)}
+      </div>
+    </div>
+  `;
+}
+
+window.filterMsgUsers = function(){
+  const q = ($('msgSearch').value || '').toLowerCase();
+  document.querySelectorAll('.msg-user-row').forEach(el=>{
+    const hay = el.dataset.search || '';
+    el.style.display = hay.includes(q) ? '' : 'none';
+  });
+};
+
+window.sendAdminMsg = async function(){
+  const input = $('msgInput');
+  if(!input) return;
+  const text = input.value.trim();
+  if(!text) return;
+  if(!activeChatUserId) return;
+  input.value = '';
+  try {
+    await addDoc(collection(db, 'messages'), {
+      userId: activeChatUserId,
+      from: 'admin',
+      to: activeChatUserId,
+      text, at: serverTimestamp(), read: false
+    });
+    const unread = messagesCache.filter(m => m.userId===activeChatUserId && m.from==='user' && !m.read);
+    for(const m of unread){
+      try { await updateDoc(doc(db, 'messages', m.id), { read: true }); } catch(e){}
+    }
+  } catch(e){
+    console.error('send msg error:', e);
+    Swal.fire({icon:'error', title:'Failed to send', text:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+function scrollChatToBottom(){
+  setTimeout(() => {
+    const el = $('chatThread');
+    if(el) el.scrollTop = el.scrollHeight;
+  }, 100);
+}
+  // ==================== TOURNAMENTS ====================
+function renderTournamentsAdmin(){
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🏆 CREATE TOURNAMENT</div>
+        <input id="tTitle" class="input mb-2" placeholder="Title (e.g., BR Solo Match)"/>
+        <select id="tMode" class="input mb-2">
+          <option value="br">BR Match</option>
+          <option value="duo">Duo BR</option>
+          <option value="pro">Pro League</option>
+          <option value="surv">Survival</option>
+          <option value="cs4">CS 4v4</option>
+          <option value="clash">Clash Squad</option>
+          <option value="head">Headshot</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input id="tFee" type="number" class="input mb-2" placeholder="Entry Fee (৳)" value="20"/>
+        <input id="tPrize" type="number" class="input mb-2" placeholder="Prize Pool (৳)" value="500"/>
+        <input id="tSlots" type="number" class="input mb-2" placeholder="Total Slots" value="48"/>
+        <input id="tStart" type="datetime-local" class="input mb-2"/>
+        <button onclick="createTournament()" class="btn w-full py-2 bg-cyan-500 text-black">CREATE</button>
+      </div>
+
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 ALL TOURNAMENTS (${tournamentsCache.length})</div>
+        ${tournamentsCache.length ? tournamentsCache.map(t => tournamentAdminCard(t)).join('') :
+          `<div class="text-slate-400 text-xs text-center py-6">No tournaments yet</div>`}
+      </div>
+    </div>
+  `;
+}
+
+function tournamentAdminCard(t){
+  const filled = (t.players||[]).length;
+  const total = t.slots?.total || 48;
+  const statusColor = t.status==='upcoming'?'text-cyan-300':t.status==='ongoing'?'text-red-300':'text-slate-400';
+  const roomSet = t.room?.id && t.room?.password;
+  return `
+    <div class="p-3 rounded-lg bg-white/5 border border-white/10 mb-2">
+      <div class="font-semibold text-xs mb-1">${escapeHtml(t.title||'-')}</div>
+      <div class="text-[10px] text-slate-400">${escapeHtml(t.mode||'-')} • Entry: ৳${fmt(t.entryFee||0)} • Prize: ৳${fmt(t.prizePool||0)}</div>
+      <div class="text-[10px] mt-1">
+        <span class="${statusColor} font-semibold">${(t.status||'upcoming').toUpperCase()}</span>
+        • Slots: ${filled}/${total}
+      </div>
+      ${t.room?.time ? `<div class="text-[10px] mt-1 text-yellow-300">⏰ Room Time: ${escapeHtml(t.room.time)}</div>` : ''}
+      ${roomSet ? `
+        <div class="mt-2 p-2 rounded bg-cyan-500/10 border border-cyan-500/30 text-[10px]">
+          <div class="text-cyan-300 font-semibold mb-1">🎮 ROOM DETAILS</div>
+          <div class="text-slate-300">ID: <span class="text-cyan-300 font-mono font-bold">${escapeHtml(t.room.id)}</span></div>
+          <div class="text-slate-300">Pass: <span class="text-cyan-300 font-mono font-bold">${escapeHtml(t.room.password)}</span></div>
+        </div>
+      ` : `<div class="text-[9px] text-orange-300 mt-1">⚠ Room not set</div>`}
+      <div class="flex gap-1 flex-wrap mt-2">
+        <button onclick="openRoomDialog('${t.id}')" class="btn px-2 py-1 text-[9px] bg-yellow-500/20 text-yellow-300">${roomSet?'Edit Room':'Set Room'}</button>
+        <button onclick="updateTournamentStatus('${t.id}','upcoming')" class="btn px-2 py-1 text-[9px] bg-cyan-500/20 text-cyan-300">U</button>
+        <button onclick="updateTournamentStatus('${t.id}','ongoing')" class="btn px-2 py-1 text-[9px] bg-red-500/20 text-red-300">O</button>
+        <button onclick="updateTournamentStatus('${t.id}','completed')" class="btn px-2 py-1 text-[9px] bg-slate-500/20 text-slate-300">C</button>
+        <button onclick="deleteTournament('${t.id}')" class="btn px-2 py-1 text-[9px] bg-red-500/30 text-red-200">🗑</button>
+      </div>
+    </div>
+  `;
+}
+
+window.openRoomDialog = async function(id){
+  const t = tournamentsCache.find(x => x.id === id);
+  if(!t) return;
+  const { value: formValues } = await Swal.fire({
+    title: 'Set Room Details',
+    html: `
+      <div style="text-align:left; font-size:13px;">
+        <label style="color:#8ea0cc;font-size:11px;display:block;margin-bottom:4px;">Room Time (e.g., 9:30 PM)</label>
+        <input id="swRoomTime" class="swal2-input" placeholder="9:30 PM" value="${escapeHtml(t.room?.time||'')}">
+        <label style="color:#8ea0cc;font-size:11px;display:block;margin-top:8px;margin-bottom:4px;">Room ID</label>
+        <input id="swRoomId" class="swal2-input" placeholder="123456789" value="${escapeHtml(t.room?.id||'')}">
+        <label style="color:#8ea0cc;font-size:11px;display:block;margin-top:8px;margin-bottom:4px;">Room Password</label>
+        <input id="swRoomPass" class="swal2-input" placeholder="abc123" value="${escapeHtml(t.room?.password||'')}">
+      </div>
+    `,
+    background: '#0d1330', color: '#fff',
+    showCancelButton: true,
+    confirmButtonText: 'Save Room',
+    confirmButtonColor: '#00e5ff',
+    preConfirm: () => {
+      const time = document.getElementById('swRoomTime').value.trim();
+      const roomId = document.getElementById('swRoomId').value.trim();
+      const password = document.getElementById('swRoomPass').value.trim();
+      if(!roomId || !password){
+        Swal.showValidationMessage('Room ID and Password required');
+        return false;
+      }
+      return { time, roomId, password };
+    }
+  });
+  if(!formValues) return;
+  try {
+    await updateDoc(doc(db, 'tournaments', id), {
+      'room.time': formValues.time,
+      'room.id': formValues.roomId,
+      'room.password': formValues.password,
+      roomUpdatedAt: serverTimestamp()
+    });
+    await audit('ROOM_SET', 'tournament', id);
+    Swal.fire({icon:'success', title:'Room saved!', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+window.createTournament = async function(){
+  const title = $('tTitle').value.trim();
+  const mode = $('tMode').value;
+  const entryFee = Number($('tFee').value) || 0;
+  const prizePool = Number($('tPrize').value) || 0;
+  const slotsTotal = Number($('tSlots').value) || 48;
+  const startAt = $('tStart').value;
+
+  if(!title){ Swal.fire({icon:'warning', title:'Title required', background:'#0d1330', color:'#fff'}); return; }
+  if(!startAt){ Swal.fire({icon:'warning', title:'Start time required', background:'#0d1330', color:'#fff'}); return; }
+
+  try {
+    await addDoc(collection(db, 'tournaments'), {
+      title, mode, entryFee, prizePool,
+      slots: { total: slotsTotal, filled: 0 },
+      players: [],
+      startAt: new Date(startAt).toISOString(),
+      status: 'upcoming',
+      createdAt: serverTimestamp(),
+      createdBy: adminUser.uid
+    });
+    await audit('TOURNAMENT_CREATE', 'tournament', title);
+    $('tTitle').value = '';
+    $('tStart').value = '';
+    Swal.fire({icon:'success', title:'Created!', background:'#0d1330', color:'#fff', timer:1500, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+window.updateTournamentStatus = async function(id, status){
+  const t = tournamentsCache.find(x => x.id === id);
+  const labels = { upcoming:'Upcoming', ongoing:'Ongoing', completed:'Completed' };
+  try {
+    await updateDoc(doc(db, 'tournaments', id), { status });
+    await audit('TOURNAMENT_STATUS', 'tournament', id);
+    Swal.fire({icon:'success', title:`Status: ${labels[status]||status}`, text: t?.title||'', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:'Failed', text:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+window.deleteTournament = async function(id){
+  const r = await Swal.fire({
+    title:'Delete tournament?', text:'Cannot be undone.',
+    icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await deleteDoc(doc(db, 'tournaments', id));
+    await audit('TOURNAMENT_DELETE', 'tournament', id);
+    Swal.fire({icon:'success', title:'Deleted', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+// ==================== RESULTS ====================
+function renderResultsAdmin(){
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 PUBLISH RESULT</div>
+        <select id="rTournament" class="input mb-2">
+          <option value="">— Select Tournament —</option>
+          ${tournamentsCache.map(t => `<option value="${t.id}">${escapeHtml(t.title||'-')}</option>`).join('')}
+        </select>
+        <input id="rWinner1" class="input mb-2" placeholder="1st Place (username / FF IGN)"/>
+        <input id="rPrize1" type="number" class="input mb-2" placeholder="1st Prize (৳)"/>
+        <input id="rWinner2" class="input mb-2" placeholder="2nd Place (optional)"/>
+        <input id="rPrize2" type="number" class="input mb-2" placeholder="2nd Prize (optional)"/>
+        <input id="rWinner3" class="input mb-2" placeholder="3rd Place (optional)"/>
+        <input id="rPrize3" type="number" class="input mb-2" placeholder="3rd Prize (optional)"/>
+        <button onclick="publishResult()" class="btn w-full py-2 bg-cyan-500 text-black">PUBLISH RESULT</button>
+      </div>
+    </div>
+  `;
+}
+
+window.publishResult = async function(){
+  const tId = $('rTournament').value;
+  if(!tId){ Swal.fire({icon:'warning', title:'Select a tournament', background:'#0d1330', color:'#fff'}); return; }
+  const t = tournamentsCache.find(x => x.id === tId);
+  const w1 = $('rWinner1').value.trim();
+  const p1 = Number($('rPrize1').value) || 0;
+  const w2 = $('rWinner2').value.trim();
+  const p2 = Number($('rPrize2').value) || 0;
+  const w3 = $('rWinner3').value.trim();
+  const p3 = Number($('rPrize3').value) || 0;
+  if(!w1 || !p1){ Swal.fire({icon:'warning', title:'1st place required', background:'#0d1330', color:'#fff'}); return; }
+  try {
+    const winners = [{ rank:1, name:w1, prize:p1 }];
+    if(w2 && p2) winners.push({ rank:2, name:w2, prize:p2 });
+    if(w3 && p3) winners.push({ rank:3, name:w3, prize:p3 });
+    await addDoc(collection(db, 'results'), {
+      tournamentId: tId, tournamentName: t?.title || '', winners,
+      at: serverTimestamp(), publishedBy: adminUser.uid
+    });
+    await updateDoc(doc(db, 'tournaments', tId), { status:'completed' });
+    await audit('RESULT_PUBLISH', 'result', tId);
+    $('rWinner1').value = ''; $('rPrize1').value = '';
+    $('rWinner2').value = ''; $('rPrize2').value = '';
+    $('rWinner3').value = ''; $('rPrize3').value = '';
+    Swal.fire({icon:'success', title:'Published!', background:'#0d1330', color:'#fff', timer:1500, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+// ==================== DEPOSITS ====================
+function renderDeposits(){
+  const pending = transactionsCache.filter(t => t.type === 'deposit_request' && t.status === 'pending');
+  const completed = transactionsCache.filter(t => t.type === 'deposit' && t.status === 'completed').slice(0, 20);
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">💰 PENDING DEPOSITS (${pending.length})</div>
+        ${pending.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th><th>Actions</th></tr></thead>
+          <tbody>${pending.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-yellow-300 font-bold">৳${fmt(t.amount||0)}</td>
+              <td class="text-xs">${escapeHtml(t.method||'-')}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+              <td>
+                <button onclick="approveDeposit('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
+                <button onclick="rejectDeposit('${t.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/20 text-red-300">Reject</button>
+              </td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-sm text-center py-6">No pending deposits</div>`}
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">✅ RECENT DEPOSITS (${completed.length})</div>
+        ${completed.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th></tr></thead>
+          <tbody>${completed.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-green-300 font-bold">৳${fmt(t.amount||0)}</td>
+              <td class="text-xs">${escapeHtml(t.method||'-')}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-xs text-center py-4">No completed deposits</div>`}
+      </div>
+    </div>
+  `;
+}
+
+window.approveDeposit = async function(txId){
+  const t = transactionsCache.find(x => x.id === txId);
+  if(!t) return;
+  const r = await Swal.fire({
+    title:'Approve deposit?', text:`৳${fmt(t.amount)} will be added.`,
+    icon:'question', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#22ff88'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await runTransaction(db, async (trx) => {
+      const txRef = doc(db, 'transactions', txId);
+      const userRef = doc(db, 'users', t.userId);
+      const userSnap = await trx.get(userRef);
+      if(!userSnap.exists()) throw new Error('User not found');
+      trx.update(userRef, { 'wallet.available': increment(t.amount) });
+      trx.update(txRef, { status:'completed', approvedAt: serverTimestamp(), approvedBy: adminUser.uid });
+    });
+    await audit('DEPOSIT_APPROVE', 'transaction', txId);
+    Swal.fire({icon:'success', title:'Approved', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+window.rejectDeposit = async function(txId){
+  const r = await Swal.fire({
+    title:'Reject deposit?', icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await updateDoc(doc(db, 'transactions', txId), { status:'rejected', rejectedAt: serverTimestamp(), rejectedBy: adminUser.uid });
+    await audit('DEPOSIT_REJECT', 'transaction', txId);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+// ==================== WITHDRAWALS ====================
+function renderWithdrawals(){
+  const pending = transactionsCache.filter(t => t.type === 'withdrawal_request' && t.status === 'pending');
+  const completed = transactionsCache.filter(t => t.type === 'withdrawal' && t.status === 'completed').slice(0, 20);
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">💸 PENDING WITHDRAWALS (${pending.length})</div>
+        ${pending.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th><th>Actions</th></tr></thead>
+          <tbody>${pending.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-red-300 font-bold">৳${fmt(Math.abs(t.amount||0))}</td>
+              <td class="text-xs">${escapeHtml(t.method||'-')}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+              <td>
+                <button onclick="approveWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
+                <button onclick="rejectWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/20 text-red-300">Reject</button>
+              </td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-sm text-center py-6">No pending withdrawals</div>`}
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">✅ RECENT WITHDRAWALS (${completed.length})</div>
+        ${completed.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Time</th></tr></thead>
+          <tbody>${completed.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-red-300 font-bold">৳${fmt(Math.abs(t.amount||0))}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-xs text-center py-4">No completed withdrawals</div>`}
+      </div>
+    </div>
+  `;
+}
+
+window.approveWithdrawal = async function(txId){
+  const t = transactionsCache.find(x => x.id === txId);
+  if(!t) return;
+  const r = await Swal.fire({
+    title:'Approve withdrawal?', text:`৳${fmt(Math.abs(t.amount))} will be deducted.`,
+    icon:'question', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#22ff88'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await updateDoc(doc(db, 'transactions', txId), { status:'completed', approvedAt: serverTimestamp(), approvedBy: adminUser.uid });
+    await addDoc(collection(db,'transactions'), {
+      userId: t.userId, type:'withdrawal', amount: -Math.abs(t.amount),
+      status:'completed', at:serverTimestamp()
+    });
+    await audit('WITHDRAWAL_APPROVE', 'transaction', txId);
+    Swal.fire({icon:'success', title:'Approved', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.rejectWithdrawal = async function(txId){
+  const t = transactionsCache.find(x => x.id === txId);
+  if(!t) return;
+  const r = await Swal.fire({
+    title:'Reject withdrawal?', text:`৳${fmt(Math.abs(t.amount))} will be refunded.`,
+    icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await runTransaction(db, async (trx) => {
+      const userRef = doc(db, 'users', t.userId);
+      trx.update(userRef, { 'wallet.available': increment(Math.abs(t.amount)) });
+      trx.update(doc(db,'transactions',txId), { status:'rejected', rejectedAt: serverTimestamp() });
+    });
+    await audit('WITHDRAWAL_REJECT', 'transaction', txId);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+  // ==================== GAME MODES ====================
+function renderModes(){
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🎮 ADD GAME MODE</div>
+        <input id="gmName" class="input mb-2" placeholder="Mode name (e.g., BR Solo)"/>
+        <input id="gmIcon" class="input mb-2" placeholder="Icon emoji (e.g., 🎯)" value="🎮"/>
+        <button onclick="addGameMode()" class="btn w-full py-2 bg-cyan-500 text-black">ADD MODE</button>
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 GAME MODES (${gameModesCache.length})</div>
+        <div class="space-y-2">
+          ${gameModesCache.length ? gameModesCache.map(m => gameModeRow(m)).join('') :
+            `<div class="text-slate-400 text-xs text-center py-6">No modes yet</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function gameModeRow(m){
+  return `
+    <div class="flex items-center gap-2 p-3 rounded-lg bg-white/5 border border-white/10">
+      <div class="text-2xl">${escapeHtml(m.icon||'🎮')}</div>
+      <div class="flex-1">
+        <div class="font-semibold text-xs">${escapeHtml(m.name||'-')}</div>
+        <div class="text-[10px] ${m.active?'text-green-300':'text-red-300'}">${m.active?'ACTIVE':'DISABLED'}</div>
+      </div>
+      <button onclick="toggleGameMode('${m.id}', ${m.active})" class="btn px-2 py-1 text-[10px] ${m.active?'bg-red-500/20 text-red-300':'bg-green-500/20 text-green-300'}">${m.active?'Disable':'Enable'}</button>
+      <button onclick="deleteGameMode('${m.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/30 text-red-200">🗑</button>
+    </div>
+  `;
+}
+
+window.addGameMode = async function(){
+  const name = $('gmName').value.trim();
+  const icon = $('gmIcon').value.trim() || '🎮';
+  if(!name){ Swal.fire({icon:'warning', title:'Name required', background:'#0d1330', color:'#fff'}); return; }
+  try {
+    await addDoc(collection(db, 'gameModes'), { name, icon, active:true, at: serverTimestamp() });
+    await audit('GAMEMODE_ADD', 'gameMode', name);
+    $('gmName').value = '';
+    Swal.fire({icon:'success', title:'Added!', background:'#0d1330', color:'#fff', timer:1000, showConfirmButton:false});
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.toggleGameMode = async function(id, current){
+  try {
+    await updateDoc(doc(db, 'gameModes', id), { active: !current });
+    await audit('GAMEMODE_TOGGLE', 'gameMode', id);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.deleteGameMode = async function(id){
+  const r = await Swal.fire({
+    title:'Delete mode?', icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await deleteDoc(doc(db, 'gameModes', id));
+    await audit('GAMEMODE_DELETE', 'gameMode', id);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+// ==================== BANNERS ====================
+function renderBanners(){
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🖼️ ADD BANNER</div>
+        <input id="bnTitle" class="input mb-2" placeholder="Banner title"/>
+        <input id="bnSubtitle" class="input mb-2" placeholder="Subtitle (optional)"/>
+        <input id="bnBtn" class="input mb-2" placeholder="Button text (e.g., Join Now)" value="Join Now"/>
+        <select id="bnAction" class="input mb-2">
+          <option value="tournaments">Go to Tournaments</option>
+          <option value="wallet">Go to Wallet</option>
+          <option value="messages">Go to Messages</option>
+        </select>
+        <button onclick="addBanner()" class="btn w-full py-2 bg-cyan-500 text-black">ADD BANNER</button>
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 BANNERS (${bannersCache.length})</div>
+        <div class="space-y-2">
+          ${bannersCache.length ? bannersCache.map(b => bannerRow(b)).join('') :
+            `<div class="text-slate-400 text-xs text-center py-6">No banners yet</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function bannerRow(b){
+  return `
+    <div class="p-3 rounded-lg bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border border-cyan-500/30">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <div class="font-semibold text-xs">${escapeHtml(b.title||'-')}</div>
+          <div class="text-[10px] text-slate-300 mt-1">${escapeHtml(b.subtitle||'')}</div>
+          <div class="text-[9px] text-slate-400 mt-1">${escapeHtml(b.action||'tournaments')} • ${b.active!==false?'ACTIVE':'OFF'}</div>
+        </div>
+        <div class="flex gap-1">
+          <button onclick="toggleBanner('${b.id}', ${b.active !== false})" class="btn px-2 py-1 text-[10px] ${b.active!==false?'bg-red-500/20 text-red-300':'bg-green-500/20 text-green-300'}">${b.active!==false?'Off':'On'}</button>
+          <button onclick="deleteBanner('${b.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/30 text-red-200">🗑</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.addBanner = async function(){
+  const title = $('bnTitle').value.trim();
+  const subtitle = $('bnSubtitle').value.trim();
+  const btn = $('bnBtn').value.trim() || 'Join Now';
+  const action = $('bnAction').value;
+  if(!title){ Swal.fire({icon:'warning', title:'Title required', background:'#0d1330', color:'#fff'}); return; }
+  try {
+    await addDoc(collection(db, 'banners'), { title, subtitle, btn, action, active:true, at: serverTimestamp() });
+    await audit('BANNER_ADD', 'banner', title);
+    $('bnTitle').value = ''; $('bnSubtitle').value = '';
+    Swal.fire({icon:'success', title:'Added!', background:'#0d1330', color:'#fff', timer:1000, showConfirmButton:false});
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.toggleBanner = async function(id, current){
+  try {
+    await updateDoc(doc(db, 'banners', id), { active: !current });
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.deleteBanner = async function(id){
+  const r = await Swal.fire({
+    title:'Delete banner?', icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await deleteDoc(doc(db, 'banners', id));
+    await audit('BANNER_DELETE', 'banner', id);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+// ==================== NOTIFICATIONS ====================
+function renderNotificationsAdmin(){
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🔔 SEND NOTIFICATION</div>
+        <input id="notifTitle" class="input mb-2" placeholder="Title"/>
+        <textarea id="notifBody" class="input mb-2" rows="3" placeholder="Message body"></textarea>
+        <select id="notifTarget" class="input mb-3">
+          <option value="all">📢 All Users</option>
+          ${usersCache.map(u => `<option value="${u.id}">👤 ${escapeHtml(u.username||'-')}</option>`).join('')}
+        </select>
+        <button onclick="sendNotification()" class="btn w-full py-2 bg-cyan-500 text-black">SEND</button>
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📜 RECENT (${notificationsCache.length})</div>
+        <div class="space-y-2 max-h-96 overflow-y-auto">
+          ${notificationsCache.length ? notificationsCache.slice(0,30).map(n => `
+            <div class="p-3 rounded-lg bg-white/5 border border-white/10">
+              <div class="font-semibold text-xs">${escapeHtml(n.title||'-')}</div>
+              <div class="text-[11px] text-slate-300 mt-1">${escapeHtml(n.body||'-')}</div>
+              <div class="text-[10px] text-slate-500 mt-1">${shortTime(n.at)} • ${n.target==='all'?'All Users':'Single User'}</div>
+            </div>
+          `).join('') : `<div class="text-slate-400 text-xs text-center py-4">No notifications yet</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.sendNotification = async function(){
+  const title = $('notifTitle').value.trim();
+  const body = $('notifBody').value.trim();
+  const target = $('notifTarget').value;
+  if(!title || !body){
+    Swal.fire({icon:'warning', title:'Title & body required', background:'#0d1330', color:'#fff'});
+    return;
+  }
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      title, body, target, readBy: [], at: serverTimestamp(), by: adminUser.uid
+    });
+    await audit('NOTIFICATION_SEND', 'notification', target);
+    $('notifTitle').value = '';
+    $('notifBody').value = '';
+    Swal.fire({icon:'success', title:'Sent!', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+// ==================== AUDIT LOG ====================
+function renderAudit(){
+  $('adminMain').innerHTML = `
+    <div class="page glass card p-4">
+      <div class="font-game text-sm text-cyan-300 mb-3">📜 AUDIT LOG (${auditCache.length})</div>
+      <div class="space-y-2 max-h-[70vh] overflow-y-auto">
+        ${auditCache.length ? auditCache.slice(0,100).map(a => auditRow(a)).join('') :
+          `<div class="text-slate-400 text-xs text-center py-6">No activity yet</div>`}
+      </div>
+    </div>
+  `;
+}
+
+function auditRow(a){
+  const iconMap = {
+    'LOGIN':'🔓','LOGOUT':'🔒',
+    'USER_BLOCK':'🚫','USER_UNBLOCK':'✅',
+    'DEPOSIT_APPROVE':'💰','DEPOSIT_REJECT':'❌',
+    'WITHDRAWAL_APPROVE':'💸','WITHDRAWAL_REJECT':'❌',
+    'TOURNAMENT_CREATE':'🏆','TOURNAMENT_STATUS':'🔄','TOURNAMENT_DELETE':'🗑',
+    'ROOM_SET':'🎮',
+    'RESULT_PUBLISH':'📋',
+    'GAMEMODE_ADD':'🎮','GAMEMODE_TOGGLE':'🎮','GAMEMODE_DELETE':'🗑',
+    'BANNER_ADD':'🖼️','BANNER_DELETE':'🗑',
+    'NOTIFICATION_SEND':'🔔'
+  };
+  const icon = iconMap[a.action] || '📌';
+  return `
+    <div class="p-3 rounded-lg bg-white/5 border border-white/10">
+      <div class="flex items-center gap-2">
+        <div class="text-lg">${icon}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-xs">${escapeHtml(a.action||'-')}</div>
+          <div class="text-[10px] text-slate-400">${escapeHtml(a.target||'-')} • ${escapeHtml(a.recordId||'-')}</div>
+        </div>
+        <div class="text-[10px] text-slate-500 text-right">${shortTime(a.at)}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== HELPERS ====================
+function updateMsgBadge(){
+  const unread = messagesCache.filter(m => m.from === 'user' && !m.read).length;
+  const badge = $('msgNavBadge');
+  if(badge){
+    if(unread > 0){ badge.textContent = unread; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
+  }
+}
+
+async function audit(action, target, recordId){
+  try {
+    await addDoc(collection(db, 'auditLogs'), {
+      adminId: adminUser.uid,
+      adminEmail: adminUser.email,
+      action, target, recordId,
+      at: serverTimestamp()
+    });
+  } catch(e){ console.error('audit error:', e); }
+}
+</script>
+
+</body>
+</html>
