@@ -407,7 +407,8 @@ function stat(label, value, color){
     <div class="text-[10px] text-slate-400 uppercase tracking-wider">${label}</div>
     <div class="font-game text-xl mt-1 ${color} neon-text">${value}</div>
   </div>`;
-// ==================== USERS ====================
+}
+  // ==================== USERS ====================
 function renderUsers(){
   $('adminMain').innerHTML = `
     <div class="page glass card p-4">
@@ -664,6 +665,7 @@ function scrollChatToBottom(){
     const el = $('chatThread');
     if(el) el.scrollTop = el.scrollHeight;
   }, 100);
+}
   // ==================== TOURNAMENTS ====================
 function renderTournamentsAdmin(){
   $('adminMain').innerHTML = `
@@ -704,14 +706,11 @@ function tournamentAdminCard(t){
   const roomSet = t.room?.id && t.room?.password;
   return `
     <div class="p-3 rounded-lg bg-white/5 border border-white/10 mb-2">
-      <div class="font-semibold text-xs mb-1">
-        ${t.featured ? '⭐ ' : ''}${escapeHtml(t.title||'-')}
-      </div>
+      <div class="font-semibold text-xs mb-1">${escapeHtml(t.title||'-')}</div>
       <div class="text-[10px] text-slate-400">${escapeHtml(t.mode||'-')} • Entry: ৳${fmt(t.entryFee||0)} • Prize: ৳${fmt(t.prizePool||0)}</div>
       <div class="text-[10px] mt-1">
         <span class="${statusColor} font-semibold">${(t.status||'upcoming').toUpperCase()}</span>
         • Slots: ${filled}/${total}
-        ${t.featured ? '• <span class="text-pink-300">FEATURED</span>' : ''}
       </div>
       ${t.room?.time ? `<div class="text-[10px] mt-1 text-yellow-300">⏰ Room Time: ${escapeHtml(t.room.time)}</div>` : ''}
       ${roomSet ? `
@@ -723,7 +722,6 @@ function tournamentAdminCard(t){
       ` : `<div class="text-[9px] text-orange-300 mt-1">⚠ Room not set</div>`}
       <div class="flex gap-1 flex-wrap mt-2">
         <button onclick="openRoomDialog('${t.id}')" class="btn px-2 py-1 text-[9px] bg-yellow-500/20 text-yellow-300">${roomSet?'Edit Room':'Set Room'}</button>
-        <button onclick="toggleFeatured('${t.id}')" class="btn px-2 py-1 text-[9px] ${t.featured ? 'bg-pink-500/40 text-pink-100' : 'bg-pink-500/10 text-pink-300'}">${t.featured ? '⭐ Featured' : '☆ Feature'}</button>
         <button onclick="updateTournamentStatus('${t.id}','upcoming')" class="btn px-2 py-1 text-[9px] bg-cyan-500/20 text-cyan-300">U</button>
         <button onclick="updateTournamentStatus('${t.id}','ongoing')" class="btn px-2 py-1 text-[9px] bg-red-500/20 text-red-300">O</button>
         <button onclick="updateTournamentStatus('${t.id}','completed')" class="btn px-2 py-1 text-[9px] bg-slate-500/20 text-slate-300">C</button>
@@ -796,7 +794,6 @@ window.createTournament = async function(){
       players: [],
       startAt: new Date(startAt).toISOString(),
       status: 'upcoming',
-      featured: false,
       createdAt: serverTimestamp(),
       createdBy: adminUser.uid
     });
@@ -815,7 +812,7 @@ window.updateTournamentStatus = async function(id, status){
   try {
     await updateDoc(doc(db, 'tournaments', id), { status });
     await audit('TOURNAMENT_STATUS', 'tournament', id);
-    Swal.fire({icon:'success', title:`Status: ${labels[status]||status}`, text:t?.title||'', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+    Swal.fire({icon:'success', title:`Status: ${labels[status]||status}`, text: t?.title||'', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
   } catch(e){
     Swal.fire({icon:'error', title:'Failed', text:e.message, background:'#0d1330', color:'#fff'});
   }
@@ -832,23 +829,6 @@ window.deleteTournament = async function(id){
     await deleteDoc(doc(db, 'tournaments', id));
     await audit('TOURNAMENT_DELETE', 'tournament', id);
     Swal.fire({icon:'success', title:'Deleted', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
-  } catch(e){
-    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
-  }
-};
-
-window.toggleFeatured = async function(id){
-  const t = tournamentsCache.find(x => x.id === id);
-  if(!t) return;
-  try {
-    await updateDoc(doc(db, 'tournaments', id), { featured: !t.featured });
-    await audit('TOURNAMENT_FEATURED', 'tournament', id);
-    Swal.fire({
-      icon: 'success',
-      title: t.featured ? '⭐ Removed from Featured' : '⭐ Marked as Featured',
-      text: t.title || '',
-      background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false
-    });
   } catch(e){
     Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
   }
@@ -1056,7 +1036,18 @@ window.rejectWithdrawal = async function(txId){
   const r = await Swal.fire({
     title:'Reject withdrawal?', text:`৳${fmt(Math.abs(t.amount))} will be refunded.`,
     icon:'warning', showCancelButton:true,
-    background:'#0d1330'                          }                                            }
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await runTransaction(db, async (trx) => {
+      const userRef = doc(db, 'users', t.userId);
+      trx.update(userRef, { 'wallet.available': increment(Math.abs(t.amount)) });
+      trx.update(doc(db,'transactions',txId), { status:'rejected', rejectedAt: serverTimestamp() });
+    });
+    await audit('WITHDRAWAL_REJECT', 'transaction', txId);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
   // ==================== GAME MODES ====================
 function renderModes(){
   $('adminMain').innerHTML = `
@@ -1270,7 +1261,7 @@ function auditRow(a){
     'USER_BLOCK':'🚫','USER_UNBLOCK':'✅',
     'DEPOSIT_APPROVE':'💰','DEPOSIT_REJECT':'❌',
     'WITHDRAWAL_APPROVE':'💸','WITHDRAWAL_REJECT':'❌',
-    'TOURNAMENT_CREATE':'🏆','TOURNAMENT_STATUS':'🔄','TOURNAMENT_DELETE':'🗑','TOURNAMENT_FEATURED':'⭐',
+    'TOURNAMENT_CREATE':'🏆','TOURNAMENT_STATUS':'🔄','TOURNAMENT_DELETE':'🗑',
     'ROOM_SET':'🎮',
     'RESULT_PUBLISH':'📋',
     'GAMEMODE_ADD':'🎮','GAMEMODE_TOGGLE':'🎮','GAMEMODE_DELETE':'🗑',
