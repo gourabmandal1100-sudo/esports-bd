@@ -45,7 +45,6 @@
 </head>
 <body class="pb-24">
 
-<!-- ================= AUTH SCREEN ================= -->
 <div id="authScreen" class="min-h-screen flex items-center justify-center p-5">
   <div class="glass card p-6 w-full max-w-md glow-cyan">
     <div class="text-center mb-6">
@@ -60,7 +59,6 @@
       <button onclick="switchAuth('signup')" id="tabSignup" class="btn flex-1 py-2 text-sm glass">SIGN UP</button>
     </div>
 
-    <!-- LOGIN FORM -->
     <div id="loginForm" class="space-y-3">
       <input id="loginEmail" class="input" placeholder="Email"/>
       <input id="loginPass" type="password" class="input" placeholder="Password"/>
@@ -68,7 +66,6 @@
       <button onclick="resetPassword()" class="text-xs text-cyan-300 w-full text-center">Forgot Password?</button>
     </div>
 
-    <!-- SIGNUP FORM -->
     <div id="signupForm" class="space-y-3 hidden">
       <input id="suUser" class="input" placeholder="Username"/>
       <input id="suEmail" class="input" placeholder="Email" type="email"/>
@@ -86,11 +83,8 @@
   </div>
 </div>
 
-<!-- ================= MAIN APP ================= -->
 <div id="app" class="hidden">
-
-  <!-- HEADER -->
-  <header class="sticky top-0 z-30 glass border-b border-cyan-500/20">
+    <header class="sticky top-0 z-30 glass border-b border-cyan-500/20">
     <div class="flex items-center justify-between px-4 py-3">
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center font-game text-black text-xs">ES</div>
@@ -115,10 +109,8 @@
     </div>
   </header>
 
-  <!-- PAGES -->
   <main id="main" class="px-4 pt-4 max-w-lg mx-auto"></main>
 
-  <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <a onclick="go('home')" data-nav="home">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
@@ -142,6 +134,7 @@
     </a>
   </nav>
 </div>
+
 <script type="module">
 /* ============================================================
    E-SPORTS BD — PLAYER APP (Firebase Version)
@@ -169,6 +162,8 @@ let resultsCache = [];
 let messagesCache = [];
 let transactionsCache = [];
 let unsubscribers = [];
+window._tourFilter = 'all';
+window._tourModeFilter = null;
 
 const $ = id => document.getElementById(id);
 
@@ -186,8 +181,7 @@ window.switchAuth = function(which){
     $('loginForm').classList.add('hidden');
   }
 };
-
-// ==================== SIGNUP ====================
+  // ==================== SIGNUP ====================
 window.doSignup = async function(){
   const username = $('suUser').value.trim();
   const email = $('suEmail').value.trim();
@@ -270,7 +264,6 @@ window.doLogin = async function(){
 
   try {
     await signInWithEmailAndPassword(auth, email, pass);
-    // onAuthStateChanged handles rest
   } catch(e) {
     console.error('Login error:', e);
     let msg = 'Login failed';
@@ -320,14 +313,16 @@ onAuthStateChanged(auth, async (user) => {
         Swal.fire({icon:'error', title:'Account blocked', text:'Admin এর সাথে যোগাযোগ করুন', background:'#0d1330', color:'#fff'});
         return;
       }
+
+      // Block admin from user app
       if(data.role === 'admin'){
-  await signOut(auth);
-  Swal.fire({icon:'info', title:'Admin account', text:'Admin panel ব্যবহার করুন: /admin.html', background:'#0d1330', color:'#fff'});
-  return;
+        await signOut(auth);
+        Swal.fire({icon:'info', title:'Admin account', text:'Admin panel ব্যবহার করুন: /admin.html', background:'#0d1330', color:'#fff'});
+        return;
       }
+
       currentUser = user;
       currentUserData = { id: user.uid, ...data };
-
       $('authScreen').classList.add('hidden');
       $('app').classList.remove('hidden');
       startRealtimeListeners(user.uid);
@@ -367,31 +362,25 @@ window.logout = async function(){
 function startRealtimeListeners(uid){
   stopRealtimeListeners();
 
-  // Own profile (realtime balance)
   unsubscribers.push(
     onSnapshot(doc(db, 'users', uid), (snap) => {
       if(snap.exists()){
         currentUserData = { id: snap.id, ...snap.data() };
         refreshHeader();
-        if(currentRoute === 'profile' || currentRoute === 'wallet') {
-          if(currentRoute === 'profile') renderProfile();
-          if(currentRoute === 'wallet') renderWallet();
-        }
+        if(currentRoute === 'profile') renderProfile();
+        if(currentRoute === 'wallet') renderWallet();
       }
     }, err => console.error('profile listener:', err))
   );
 
-  // Tournaments (public read)
   unsubscribers.push(
     onSnapshot(collection(db, 'tournaments'), (snap) => {
       tournamentsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       if(currentRoute === 'home') renderHome();
       if(currentRoute === 'tournaments') renderTournaments();
-      if(currentRoute === 'results') renderResults();
     }, err => console.error('tournaments listener:', err))
   );
 
-  // Banners
   unsubscribers.push(
     onSnapshot(collection(db, 'banners'), (snap) => {
       bannersCache = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(b => b.active !== false);
@@ -399,7 +388,6 @@ function startRealtimeListeners(uid){
     }, err => console.error('banners listener:', err))
   );
 
-  // Game Modes
   unsubscribers.push(
     onSnapshot(collection(db, 'gameModes'), (snap) => {
       gameModesCache = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(m => m.active !== false);
@@ -407,7 +395,6 @@ function startRealtimeListeners(uid){
     }, err => console.error('gameModes listener:', err))
   );
 
-  // Notifications
   const notifQ = query(collection(db, 'notifications'), orderBy('at', 'desc'), limit(50));
   unsubscribers.push(
     onSnapshot(notifQ, (snap) => {
@@ -417,7 +404,6 @@ function startRealtimeListeners(uid){
     }, err => console.error('notifications listener:', err))
   );
 
-  // Results (public)
   const resQ = query(collection(db, 'results'), orderBy('at', 'desc'), limit(30));
   unsubscribers.push(
     onSnapshot(resQ, (snap) => {
@@ -426,7 +412,6 @@ function startRealtimeListeners(uid){
     }, err => console.error('results listener:', err))
   );
 
-  // Messages (user's own)
   const msgQ = query(
     collection(db, 'messages'),
     where('userId', '==', uid),
@@ -440,7 +425,6 @@ function startRealtimeListeners(uid){
     }, err => console.error('messages listener:', err))
   );
 
-  // Transactions (own)
   const txQ = query(
     collection(db, 'transactions'),
     where('userId', '==', uid),
@@ -482,6 +466,13 @@ window.go = function(route){
   window.scrollTo({top:0, behavior:'smooth'});
 };
 
+// ==================== MODE FILTER NAVIGATION ====================
+window.goModeMatches = function(mode){
+  window._tourModeFilter = mode;
+  window._tourFilter = 'all';
+  go('tournaments');
+};
+
 // ==================== HEADER REFRESH ====================
 function refreshHeader(){
   if(!currentUserData) return;
@@ -508,9 +499,22 @@ function refreshHeader(){
   // ==================== HOME ====================
 function renderHome(){
   const activeBanners = bannersCache;
-  const featured = tournamentsCache.filter(t => t.status === 'upcoming').slice(0, 3);
-  const upcoming = tournamentsCache.filter(t => t.status === 'upcoming').slice(0, 5);
+  const featured = tournamentsCache.filter(t => t.featured === true).slice(0, 5);
+  const upcoming = tournamentsCache.filter(t => t.status === 'upcoming' && !t.featured).slice(0, 5);
   const activeModes = gameModesCache;
+
+  const defaultModes = [
+    { id: 'br', name: 'BR Match', icon: '🎯' },
+    { id: 'duo', name: 'Duo BR', icon: '👥' },
+    { id: 'pro', name: 'Pro League', icon: '🏆' },
+    { id: 'surv', name: 'Survival', icon: '🛡️' },
+    { id: 'cs4', name: 'CS 4v4', icon: '⚔️' },
+    { id: 'clash', name: 'Clash Squad', icon: '💥' },
+    { id: 'head', name: 'Headshot', icon: '🎯' },
+    { id: 'custom', name: 'Custom', icon: '🎮' }
+  ];
+
+  const modesToShow = activeModes.length ? activeModes : defaultModes;
 
   $('main').innerHTML = `
     <div class="page space-y-5">
@@ -549,15 +553,10 @@ function renderHome(){
           <button onclick="go('tournaments')" class="text-[11px] text-slate-400">View all →</button>
         </div>
         <div class="grid grid-cols-4 gap-2">
-          ${activeModes.length ? activeModes.slice(0, 8).map(m => `
-            <div onclick="go('tournaments')" class="glass card p-2 text-center active:scale-95 transition cursor-pointer">
+          ${modesToShow.slice(0, 8).map(m => `
+            <div onclick="goModeMatches('${m.id || 'br'}')" class="glass card p-2 text-center active:scale-95 transition cursor-pointer">
               <div class="text-xl">${escapeHtml(m.icon || '🎮')}</div>
               <div class="text-[10px] mt-1 leading-tight text-slate-200">${escapeHtml(m.name || '-')}</div>
-            </div>
-          `).join('') : ['🎯 BR Match', '👥 Duo BR', '🏆 Pro League', '🛡️ Survival', '⚔️ CS 4v4', '💥 Clash Squad', '🎯 Headshot', '🎮 Custom'].map((name, i) => `
-            <div onclick="go('tournaments')" class="glass card p-2 text-center active:scale-95 transition cursor-pointer">
-              <div class="text-xl">${name.split(' ')[0]}</div>
-              <div class="text-[10px] mt-1 leading-tight text-slate-200">${name.split(' ').slice(1).join(' ')}</div>
             </div>
           `).join('')}
         </div>
@@ -583,11 +582,28 @@ function emptyCard(msg){
 // ==================== TOURNAMENTS ====================
 function renderTournaments(){
   const filter = window._tourFilter || 'all';
+  const modeFilter = window._tourModeFilter || null;
   let list = tournamentsCache;
   if(filter !== 'all') list = list.filter(t => t.status === filter);
+  if(modeFilter) list = list.filter(t => t.mode === modeFilter);
+
+  const modeLabel = modeFilter ? {
+    br:'BR Match', duo:'Duo BR', pro:'Pro League', surv:'Survival',
+    cs4:'CS 4v4', clash:'Clash Squad', head:'Headshot', custom:'Custom'
+  }[modeFilter] || modeFilter.toUpperCase() : null;
 
   $('main').innerHTML = `
     <div class="page space-y-4">
+      ${modeFilter ? `
+        <div class="glass card p-3 flex items-center justify-between">
+          <div class="text-xs">
+            <span class="text-slate-400">Filter:</span>
+            <span class="text-cyan-300 font-semibold ml-1">🎮 ${escapeHtml(modeLabel)}</span>
+          </div>
+          <button onclick="clearModeFilter()" class="btn px-3 py-1 text-[10px] bg-pink-500/30 text-pink-100">✕ Clear</button>
+        </div>
+      ` : ''}
+
       <div class="scroll-x">
         ${['all','upcoming','ongoing','completed'].map(f => `
           <button onclick="setTourFilter('${f}')"
@@ -609,6 +625,12 @@ window.setTourFilter = function(f){
   renderTournaments();
 };
 
+window.clearModeFilter = function(){
+  window._tourModeFilter = null;
+  window._tourFilter = 'all';
+  renderTournaments();
+};
+
 function tournamentCard(t, featured = false, showJoin = false){
   const filled = (t.players || []).length;
   const total = t.slots?.total || 48;
@@ -623,6 +645,7 @@ function tournamentCard(t, featured = false, showJoin = false){
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1">
             <span class="chip ${statusBg} ${statusColor}">${(t.status || 'upcoming').toUpperCase()}</span>
+            ${t.featured ? `<span class="chip bg-pink-500/20 text-pink-300">⭐ FEATURED</span>` : ''}
             ${isJoined ? `<span class="chip bg-green-500/20 text-green-300">✅ JOINED</span>` : ''}
           </div>
           <div class="font-game text-base">${escapeHtml(t.title || '-')}</div>
@@ -974,7 +997,6 @@ function renderMessages(){
       </div>
     </div>
   `;
-  // Scroll to bottom
   setTimeout(() => {
     const el = $('chatThread');
     if(el) el.scrollTop = el.scrollHeight;
@@ -1027,7 +1049,6 @@ function renderNotifications(){
     </div>
   `;
 
-  // Auto-mark as read
   setTimeout(async () => {
     const unread = myNotifs.filter(n => !(n.readBy || []).includes(currentUser.uid));
     for(const n of unread){
