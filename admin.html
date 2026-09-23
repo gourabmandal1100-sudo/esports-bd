@@ -407,7 +407,7 @@ function stat(label, value, color){
     <div class="text-[10px] text-slate-400 uppercase tracking-wider">${label}</div>
     <div class="font-game text-xl mt-1 ${color} neon-text">${value}</div>
   </div>`;
-}
+         }
   // ==================== USERS ====================
 function renderUsers(){
   $('adminMain').innerHTML = `
@@ -722,6 +722,7 @@ function tournamentAdminCard(t){
       ` : `<div class="text-[9px] text-orange-300 mt-1">⚠ Room not set</div>`}
       <div class="flex gap-1 flex-wrap mt-2">
         <button onclick="openRoomDialog('${t.id}')" class="btn px-2 py-1 text-[9px] bg-yellow-500/20 text-yellow-300">${roomSet?'Edit Room':'Set Room'}</button>
+        <button onclick="viewPlayers('${t.id}')" class="btn px-2 py-1 text-[9px] bg-green-500/20 text-green-300">👥 Players (${filled})</button>
         <button onclick="updateTournamentStatus('${t.id}','upcoming')" class="btn px-2 py-1 text-[9px] bg-cyan-500/20 text-cyan-300">U</button>
         <button onclick="updateTournamentStatus('${t.id}','ongoing')" class="btn px-2 py-1 text-[9px] bg-red-500/20 text-red-300">O</button>
         <button onclick="updateTournamentStatus('${t.id}','completed')" class="btn px-2 py-1 text-[9px] bg-slate-500/20 text-slate-300">C</button>
@@ -776,6 +777,90 @@ window.openRoomDialog = async function(id){
   }
 };
 
+// ==================== VIEW PLAYERS ====================
+window.viewPlayers = async function(id){
+  const t = tournamentsCache.find(x => x.id === id);
+  if(!t) return;
+  const playerDetails = t.playerDetails || [];
+  const players = t.players || [];
+
+  let playersHtml = '';
+  if(playerDetails.length > 0){
+    playersHtml = playerDetails.map((p, idx) => {
+      const igns = p.igns || [];
+      const u = usersCache.find(x => x.id === p.userId);
+      return `
+        <div style="background:rgba(255,255,255,.05);padding:10px;border-radius:10px;margin-bottom:8px;border:1px solid rgba(120,160,255,.15);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+            <div style="font-weight:700;font-size:13px;color:#00e5ff;">
+              #${idx+1} ${escapeHtml(p.username || u?.username || 'Player')}
+            </div>
+            <div style="font-size:10px;color:#8ea0cc;">
+              ${escapeHtml(u?.userCode || '-')}
+            </div>
+          </div>
+          <div style="font-size:11px;color:#8ea0cc;margin-bottom:6px;">
+            <b>FF UID:</b> ${escapeHtml(p.ffUid || u?.ffUid || '-')}
+          </div>
+          <div style="font-size:11px;color:#8ea0cc;margin-bottom:4px;">
+            <b>In-Game Names (${igns.length}):</b>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            ${igns.map(ign => `
+              <span style="background:rgba(0,229,255,.15);color:#00e5ff;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;font-family:monospace;">
+                ${escapeHtml(ign)}
+              </span>
+            `).join('')}
+          </div>
+          <div style="font-size:10px;color:#8ea0cc;margin-top:6px;">
+            Joined: ${p.joinedAt ? new Date(p.joinedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '-'}
+          </div>
+        </div>
+      `;
+    }).join('');
+  } else if(players.length > 0){
+    playersHtml = players.map((uid, idx) => {
+      const u = usersCache.find(x => x.id === uid);
+      return `
+        <div style="background:rgba(255,255,255,.05);padding:10px;border-radius:10px;margin-bottom:8px;">
+          <div style="font-weight:700;font-size:12px;">
+            #${idx+1} ${escapeHtml(u?.username || 'Unknown')}
+          </div>
+          <div style="font-size:10px;color:#8ea0cc;margin-top:4px;">
+            FF UID: ${escapeHtml(u?.ffUid || '-')}
+          </div>
+          <div style="font-size:10px;color:orange;margin-top:4px;">
+            ⚠ IGN not available
+          </div>
+        </div>
+      `;
+    }).join('');
+  } else {
+    playersHtml = '<div style="text-align:center;color:#8ea0cc;padding:20px;font-size:12px;">কোনো player join করেনি</div>';
+  }
+
+  Swal.fire({
+    title: '👥 Players',
+    html: `
+      <div style="text-align:left;max-height:60vh;overflow-y:auto;padding-right:6px;">
+        <div style="background:rgba(0,229,255,.1);padding:10px;border-radius:10px;margin-bottom:12px;">
+          <div style="font-weight:700;font-size:14px;color:#00e5ff;">${escapeHtml(t.title || '-')}</div>
+          <div style="font-size:11px;color:#8ea0cc;margin-top:4px;">
+            ${escapeHtml(t.mode || '-')} • ${players.length}/${t.slots?.total || 48} slots
+          </div>
+        </div>
+        ${playersHtml}
+      </div>
+    `,
+    background: '#0d1330',
+    color: '#fff',
+    width: 480,
+    showConfirmButton: true,
+    confirmButtonText: 'Close',
+    confirmButtonColor: '#00e5ff'
+  });
+};
+
 window.createTournament = async function(){
   const title = $('tTitle').value.trim();
   const mode = $('tMode').value;
@@ -792,6 +877,7 @@ window.createTournament = async function(){
       title, mode, entryFee, prizePool,
       slots: { total: slotsTotal, filled: 0 },
       players: [],
+      playerDetails: [],
       startAt: new Date(startAt).toISOString(),
       status: 'upcoming',
       createdAt: serverTimestamp(),
@@ -812,7 +898,7 @@ window.updateTournamentStatus = async function(id, status){
   try {
     await updateDoc(doc(db, 'tournaments', id), { status });
     await audit('TOURNAMENT_STATUS', 'tournament', id);
-    Swal.fire({icon:'success', title:`Status: ${labels[status]||status}`, text: t?.title||'', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+    Swal.fire({icon:'success', title:`Status: ${labels[status]||status}`, text:t?.title||'', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
   } catch(e){
     Swal.fire({icon:'error', title:'Failed', text:e.message, background:'#0d1330', color:'#fff'});
   }
@@ -982,73 +1068,8 @@ function renderWithdrawals(){
             return `<tr>
               <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
               <td class="text-red-300 font-bold">৳${fmt(Math.abs(t.amount||0))}</td>
-              <td class="text-xs">${escapeHtml(t.method||'-')}</td>
-              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
-              <td>
-                <button onclick="approveWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
-                <button onclick="rejectWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/20 text-red-300">Reject</button>
-              </td>
-            </tr>`;
-          }).join('')}</tbody>
-        </table></div>` : `<div class="text-slate-400 text-sm text-center py-6">No pending withdrawals</div>`}
-      </div>
-      <div class="glass card p-4">
-        <div class="font-game text-sm text-cyan-300 mb-3">✅ RECENT WITHDRAWALS (${completed.length})</div>
-        ${completed.length ? `<div class="overflow-x-auto"><table>
-          <thead><tr><th>User</th><th>Amount</th><th>Time</th></tr></thead>
-          <tbody>${completed.map(t => {
-            const u = usersCache.find(x => x.id === t.userId);
-            return `<tr>
-              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
-              <td class="text-red-300 font-bold">৳${fmt(Math.abs(t.amount||0))}</td>
-              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
-            </tr>`;
-          }).join('')}</tbody>
-        </table></div>` : `<div class="text-slate-400 text-xs text-center py-4">No completed withdrawals</div>`}
-      </div>
-    </div>
-  `;
-}
-
-window.approveWithdrawal = async function(txId){
-  const t = transactionsCache.find(x => x.id === txId);
-  if(!t) return;
-  const r = await Swal.fire({
-    title:'Approve withdrawal?', text:`৳${fmt(Math.abs(t.amount))} will be deducted.`,
-    icon:'question', showCancelButton:true,
-    background:'#0d1330', color:'#fff', confirmButtonColor:'#22ff88'
-  });
-  if(!r.isConfirmed) return;
-  try {
-    await updateDoc(doc(db, 'transactions', txId), { status:'completed', approvedAt: serverTimestamp(), approvedBy: adminUser.uid });
-    await addDoc(collection(db,'transactions'), {
-      userId: t.userId, type:'withdrawal', amount: -Math.abs(t.amount),
-      status:'completed', at:serverTimestamp()
-    });
-    await audit('WITHDRAWAL_APPROVE', 'transaction', txId);
-    Swal.fire({icon:'success', title:'Approved', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
-  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
-};
-
-window.rejectWithdrawal = async function(txId){
-  const t = transactionsCache.find(x => x.id === txId);
-  if(!t) return;
-  const r = await Swal.fire({
-    title:'Reject withdrawal?', text:`৳${fmt(Math.abs(t.amount))} will be refunded.`,
-    icon:'warning', showCancelButton:true,
-    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
-  });
-  if(!r.isConfirmed) return;
-  try {
-    await runTransaction(db, async (trx) => {
-      const userRef = doc(db, 'users', t.userId);
-      trx.update(userRef, { 'wallet.available': increment(Math.abs(t.amount)) });
-      trx.update(doc(db,'transactions',txId), { status:'rejected', rejectedAt: serverTimestamp() });
-    });
-    await audit('WITHDRAWAL_REJECT', 'transaction', txId);
-  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
-};
-  // ==================== GAME MODES ====================
+              <td class="text-xs
+              // ==================== GAME MODES ====================
 function renderModes(){
   $('adminMain').innerHTML = `
     <div class="page space-y-4">
