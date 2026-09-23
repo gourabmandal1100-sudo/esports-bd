@@ -1026,7 +1026,7 @@ window.openWithdrawDialog = function(){
         <input id="wdNumber" class="swal2-input" placeholder="01XXXXXXXXX">
 
         <div style="margin-top:12px;padding:8px;background:rgba(255,59,92,.1);border-radius:8px;font-size:11px;color:#ff8fa3;">
-          ⚠️ Admin approve করার পর <b>২-২৪ ঘন্টায়</b> payment পাবেন।
+          ⚠️ Request পাঠালেই টাকা <b>hold</b> হয়ে যাবে। Admin approve করলে payment পাবেন, reject করলে ফেরত পাবেন।
         </div>
       </div>
     `,
@@ -1047,17 +1047,32 @@ window.openWithdrawDialog = function(){
   }).then(async (r) => {
     if(!r.isConfirmed || !r.value) return;
     try {
-      await addDoc(collection(db, 'transactions'), {
-        userId: currentUser.uid,
-        username: currentUserData?.username || '',
-        type: 'withdrawal_request',
-        amount: r.value.amount,
-        method: r.value.method,
-        number: r.value.number,
-        status: 'pending',
-        at: serverTimestamp()
+      await runTransaction(db, async (trx) => {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const uSnap = await trx.get(userRef);
+        if(!uSnap.exists()) throw new Error('User not found');
+        const uBal = uSnap.data().wallet?.available || 0;
+        if(uBal < r.value.amount) throw new Error('Insufficient balance');
+
+        trx.update(userRef, { 'wallet.available': increment(-r.value.amount) });
+
+        trx.set(doc(collection(db, 'transactions')), {
+          userId: currentUser.uid,
+          username: currentUserData?.username || '',
+          type: 'withdrawal_request',
+          amount: -r.value.amount,
+          method: r.value.method,
+          number: r.value.number,
+          status: 'pending',
+          at: serverTimestamp()
+        });
       });
-      Swal.fire({icon:'success', title:'Request sent!', text:'Admin approve করলে payment পাবেন', background:'#0d1330', color:'#fff', timer:2000, showConfirmButton:false});
+      Swal.fire({
+        icon:'success',
+        title:'Request sent!',
+        text:'৳' + r.value.amount + ' hold করা হয়েছে। Admin approve করলে payment পাবেন।',
+        background:'#0d1330', color:'#fff', timer:2500, showConfirmButton:false
+      });
     } catch(e){
       Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
     }
