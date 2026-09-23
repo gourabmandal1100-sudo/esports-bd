@@ -33,8 +33,6 @@
   .scroll-x::-webkit-scrollbar{display:none;}
   @keyframes slideIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
   .page{animation:slideIn .3s ease;}
-  @keyframes pulseDot{0%,100%{opacity:1;} 50%{opacity:.4;}}
-  .live-dot{width:8px; height:8px; border-radius:50%; background:var(--red); animation:pulseDot 1.2s infinite; box-shadow:0 0 8px var(--red);}
   .msg-bubble{padding:10px 14px; border-radius:16px; max-width:78%; font-size:13px; line-height:1.5; word-wrap:break-word; white-space:pre-wrap;}
   .msg-admin{background:linear-gradient(135deg, rgba(0,229,255,.25), rgba(168,85,247,.25)); border:1px solid rgba(0,229,255,.35); border-bottom-left-radius:4px; align-self:flex-start;}
   .msg-user{background:linear-gradient(135deg, rgba(34,255,136,.25), rgba(0,229,255,.15)); border:1px solid rgba(34,255,136,.35); border-bottom-right-radius:4px; align-self:flex-end;}
@@ -82,9 +80,8 @@
     </p>
   </div>
 </div>
-
 <div id="app" class="hidden">
-    <header class="sticky top-0 z-30 glass border-b border-cyan-500/20">
+  <header class="sticky top-0 z-30 glass border-b border-cyan-500/20">
     <div class="flex items-center justify-between px-4 py-3">
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center font-game text-black text-xs">ES</div>
@@ -137,7 +134,7 @@
 
 <script type="module">
 /* ============================================================
-   E-SPORTS BD — PLAYER APP (Firebase Version)
+   E-SPORTS BD — PLAYER APP (Firebase)
    ============================================================ */
 
 import {
@@ -150,7 +147,6 @@ import {
   fmt, bdt, escapeHtml, shortTime
 } from './firebase-config.js';
 
-// ==================== GLOBAL STATE ====================
 let currentUser = null;
 let currentUserData = null;
 let currentRoute = 'home';
@@ -313,8 +309,6 @@ onAuthStateChanged(auth, async (user) => {
         Swal.fire({icon:'error', title:'Account blocked', text:'Admin এর সাথে যোগাযোগ করুন', background:'#0d1330', color:'#fff'});
         return;
       }
-
-      // Block admin from user app
       if(data.role === 'admin'){
         await signOut(auth);
         Swal.fire({icon:'info', title:'Admin account', text:'Admin panel ব্যবহার করুন: /admin.html', background:'#0d1330', color:'#fff'});
@@ -703,149 +697,7 @@ function tournamentCard(t, featured = false, showJoin = false){
   `;
 }
 
-window.joinTournament = async function(tid){
-  const t = tournamentsCache.find(x => x.id === tid);
-  if(!t) return;
-  if((t.players || []).includes(currentUser.uid)){
-    Swal.fire({icon:'info', title:'Already joined', background:'#0d1330', color:'#fff'});
-    return;
-  }
-  const bal = (currentUserData?.wallet?.available || 0);
-  const fee = t.entryFee || 0;
-  if(bal < fee){
-    Swal.fire({
-      icon: 'warning',
-      title: 'পর্যাপ্ত balance নেই',
-      text: `আপনার balance: ৳${fmt(bal)} • প্রয়োজন: ৳${fmt(fee)}`,
-      background:'#0d1330', color:'#fff'
-    });
-    return;
-  }
-
-  // Mode অনুযায়ী কতজন player দরকার
-  const modeUidCount = {
-    'br': 1, 'duo': 2, 'pro': 4, 'surv': 1,
-    'cs4': 8, 'clash': 4, 'head': 1, 'custom': 1
-  };
-  const uidCount = modeUidCount[t.mode] || 1;
-  const modeLabels = {
-    'br': 'BR Match (Solo)',
-    'duo': 'Duo BR (2 players)',
-    'pro': 'Pro League (4 players)',
-    'surv': 'Survival',
-    'cs4': 'CS 4v4 (8 players)',
-    'clash': 'Clash Squad (4 players)',
-    'head': 'Headshot',
-    'custom': 'Custom'
-  };
-
-  // Dynamic form fields বানানো
-  // Dynamic form fields বানানো (IGN)
-let fieldsHtml = '';
-for(let i = 0; i < uidCount; i++){
-  const isSelf = i === 0;
-  fieldsHtml += `
-    <div style="margin-bottom:8px;text-align:left;">
-      <label style="color:#8ea0cc;font-size:11px;display:block;margin-bottom:4px;">
-        ${isSelf ? '👤 Your In-Game Name (You)' : `👥 Player ${i+1} In-Game Name`}
-      </label>
-      <input id="joinUid${i}" class="swal2-input" placeholder="Enter In-Game Name" value="${isSelf ? escapeHtml(currentUserData?.ffIgn || '') : ''}">
-    </div>
-  `;
-}
-  }
-
-  const r = await Swal.fire({
-    title: 'Join Tournament',
-    html: `
-      <div style="text-align:left;font-size:13px;color:#cbd5ff;max-height:55vh;overflow-y:auto;padding-right:6px;">
-        <div style="background:rgba(0,229,255,.1);padding:10px;border-radius:10px;margin-bottom:12px;">
-          <div style="font-weight:bold;font-size:14px;">${escapeHtml(t.title)}</div>
-          <div style="font-size:11px;margin-top:4px;color:#8ea0cc;">${modeLabels[t.mode] || t.mode}</div>
-          <div style="font-size:11px;margin-top:6px;">Entry: <b>৳${fmt(fee)}</b> • Balance: <b>৳${fmt(bal)}</b></div>
-        </div>
-        <div style="font-size:11px;color:#8ea0cc;margin-bottom:10px;">
-          ⚠️ ${uidCount} জন player এর Free Fire UID দিন
-        </div>
-        ${fieldsHtml}
-      </div>
-    `,
-    background:'#0d1330', color:'#fff',
-    showCancelButton: true,
-    confirmButtonText: 'JOIN NOW',
-    confirmButtonColor: '#00e5ff',
-    width: 420,
-
-  if(!r.isConfirmed || !r.value) return;
-
-  try {
-    await runTransaction(db, async (trx) => {
-      const userRef = doc(db, 'users', currentUser.uid);
-      const tourRef = doc(db, 'tournaments', tid);
-      const uSnap = await trx.get(userRef);
-      const tSnap = await trx.get(tourRef);
-      if(!uSnap.exists() || !tSnap.exists()) throw new Error('Data not found');
-      const uData = uSnap.data();
-      const tData = tSnap.data();
-      const uBal = uData.wallet?.available || 0;
-      if(uBal < fee) throw new Error('Insufficient balance');
-      const players = tData.players || [];
-      if(players.includes(currentUser.uid)) throw new Error('Already joined');
-      if(players.length >= (tData.slots?.total || 48)) throw new Error('Match is full');
-
-      const playerEntry = {
-        userId: currentUser.uid,
-        username: uData.username || '',
-        uids: r.value.uids,
-        joinedAt: new Date().toISOString()
-      };
-  preConfirm: () => {
-    const names = [];
-    for(let i = 0; i < uidCount; i++){
-      const el = document.getElementById('joinUid' + i);
-      const val = el ? el.value.trim() : '';
-      if(!val){
-        Swal.showValidationMessage(`Player ${i+1} এর In-Game Name দিন`);
-        return false;
-      }
-      if(val.length < 2){
-        Swal.showValidationMessage(`Player ${i+1} এর নাম খুব ছোট`);
-        return false;
-      }
-      names.push(val);
-    }
-    const uniqueNames = new Set(names.map(n => n.toLowerCase()));
-    if(uniqueNames.size !== names.length){
-      Swal.showValidationMessage('একই নাম দুইবার দেওয়া যাবে না');
-      return false;
-    }
-    return { names };
-  }
-});
-      trx.update(userRef, { 'wallet.available': increment(-fee), 'stats.matches': increment(1) });
-      trx.update(tourRef, {
-        players: [...players, currentUser.uid],
-        playerDetails: [...(tData.playerDetails || []), playerEntry],
-        'slots.filled': players.length + 1
-      });
-      trx.set(doc(collection(db, 'transactions')), {
-        userId: currentUser.uid,
-        type: 'entry_fee',
-        amount: -fee,
-        tournamentId: tid,
-        tournamentName: tData.title || '',
-        status: 'completed',
-        at: serverTimestamp()
-
-// ==================== RESULTS ====================
-function renderResults(){
-  $('main').innerHTML = `
-    <div class="page space-y-4">
-      <h3 class="font-game text-sm text-yellow-300 neon-text">🏆 RECENT RESULTS</h3>
-      ${resultsCache.length ? resultsCache.map(r => resultCard(r)).join('') : emptyCard('এখনো কোনো result publish হয়নি')}
-    </div>
-  `;
-}
+// ==================== JOIN TOURNAMENT (IGN FORM) ====================
 window.joinTournament = async function(tid){
   const t = tournamentsCache.find(x => x.id === tid);
   if(!t) return;
@@ -958,6 +810,7 @@ window.joinTournament = async function(tid){
       const playerEntry = {
         userId: currentUser.uid,
         username: uData.username || '',
+        ffUid: uData.ffUid || '',
         igns: r.value.names,
         joinedAt: new Date().toISOString()
       };
@@ -984,6 +837,17 @@ window.joinTournament = async function(tid){
     Swal.fire({icon:'error', title:'Join failed', text:e.message, background:'#0d1330', color:'#fff'});
   }
 };
+
+// ==================== RESULTS ====================
+function renderResults(){
+  $('main').innerHTML = `
+    <div class="page space-y-4">
+      <h3 class="font-game text-sm text-yellow-300 neon-text">🏆 RECENT RESULTS</h3>
+      ${resultsCache.length ? resultsCache.map(r => resultCard(r)).join('') : emptyCard('এখনো কোনো result publish হয়নি')}
+    </div>
+  `;
+}
+
 function resultCard(r){
   return `
     <div class="glass card p-4">
@@ -1337,7 +1201,7 @@ function renderProfile(){
       </button>
     </div>
   `;
-}
+                                                                     }
   // ==================== HELPERS ====================
 function updateMsgBadge(){
   if(!currentUser) return;
@@ -1370,7 +1234,6 @@ setInterval(() => {
   }
 }, 3000);
 
-// ==================== APP INIT ====================
 console.log('E-SPORTS BD Player App loaded');
 </script>
 
