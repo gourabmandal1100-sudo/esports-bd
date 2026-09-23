@@ -1075,20 +1075,23 @@ window.approveWithdrawal = async function(txId){
   const t = transactionsCache.find(x => x.id === txId);
   if(!t) return;
   const r = await Swal.fire({
-    title:'Approve withdrawal?', text:`৳${fmt(Math.abs(t.amount))} will be deducted.`,
+    title:'Approve withdrawal?',
+    text:`৳${fmt(Math.abs(t.amount))} already deducted (held). Approve করলে user payment পাবে।`,
     icon:'question', showCancelButton:true,
     background:'#0d1330', color:'#fff', confirmButtonColor:'#22ff88'
   });
   if(!r.isConfirmed) return;
   try {
-    await updateDoc(doc(db, 'transactions', txId), { status:'completed', approvedAt: serverTimestamp(), approvedBy: adminUser.uid });
-    await addDoc(collection(db,'transactions'), {
-      userId: t.userId, type:'withdrawal', amount: -Math.abs(t.amount),
-      status:'completed', at:serverTimestamp()
+    await updateDoc(doc(db, 'transactions', txId), {
+      status:'completed',
+      approvedAt: serverTimestamp(),
+      approvedBy: adminUser.uid
     });
     await audit('WITHDRAWAL_APPROVE', 'transaction', txId);
-    Swal.fire({icon:'success', title:'Approved', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
-  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+    Swal.fire({icon:'success', title:'Approved! 💸', text:'User কে payment করুন', background:'#0d1330', color:'#fff', timer:1800, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
 };
 
 window.rejectWithdrawal = async function(txId){
