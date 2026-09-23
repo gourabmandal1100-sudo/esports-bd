@@ -407,7 +407,7 @@ function stat(label, value, color){
     <div class="text-[10px] text-slate-400 uppercase tracking-wider">${label}</div>
     <div class="font-game text-xl mt-1 ${color} neon-text">${value}</div>
   </div>`;
-    }
+}
   // ==================== USERS ====================
 function renderUsers(){
   $('adminMain').innerHTML = `
@@ -832,7 +832,8 @@ window.viewPlayers = async function(id){
     confirmButtonColor: '#00e5ff'
   });
 };
-  window.createTournament = async function(){
+
+window.createTournament = async function(){
   const title = $('tTitle').value.trim();
   const mode = $('tMode').value;
   const entryFee = Number($('tFee').value) || 0;
@@ -942,7 +943,8 @@ window.publishResult = async function(){
     Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
   }
 };
-  // ==================== DEPOSITS ====================
+
+// ==================== DEPOSITS (TrxID Column সহ) ====================
 function renderDeposits(){
   const pending = transactionsCache.filter(t => t.type === 'deposit_request' && t.status === 'pending');
   const completed = transactionsCache.filter(t => t.type === 'deposit' && t.status === 'completed').slice(0, 20);
@@ -951,13 +953,14 @@ function renderDeposits(){
       <div class="glass card p-4">
         <div class="font-game text-sm text-cyan-300 mb-3">💰 PENDING DEPOSITS (${pending.length})</div>
         ${pending.length ? `<div class="overflow-x-auto"><table>
-          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th><th>Actions</th></tr></thead>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>TrxID</th><th>Time</th><th>Actions</th></tr></thead>
           <tbody>${pending.map(t => {
             const u = usersCache.find(x => x.id === t.userId);
             return `<tr>
-              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-xs">${escapeHtml(u?.username||t.username||'-')}</td>
               <td class="text-yellow-300 font-bold">৳${fmt(t.amount||0)}</td>
               <td class="text-xs">${escapeHtml(t.method||'-')}</td>
+              <td class="text-xs text-cyan-300 font-mono">${escapeHtml(t.ref||'-')}</td>
               <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
               <td>
                 <button onclick="approveDeposit('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
@@ -974,7 +977,7 @@ function renderDeposits(){
           <tbody>${completed.map(t => {
             const u = usersCache.find(x => x.id === t.userId);
             return `<tr>
-              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-xs">${escapeHtml(u?.username||t.username||'-')}</td>
               <td class="text-green-300 font-bold">৳${fmt(t.amount||0)}</td>
               <td class="text-xs">${escapeHtml(t.method||'-')}</td>
               <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
@@ -1023,7 +1026,7 @@ window.rejectDeposit = async function(txId){
   } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
 };
 
-// ==================== WITHDRAWALS ====================
+// ==================== WITHDRAWALS (Number Column সহ) ====================
 function renderWithdrawals(){
   const pending = transactionsCache.filter(t => t.type === 'withdrawal_request' && t.status === 'pending');
   const completed = transactionsCache.filter(t => t.type === 'withdrawal' && t.status === 'completed').slice(0, 20);
@@ -1032,16 +1035,17 @@ function renderWithdrawals(){
       <div class="glass card p-4">
         <div class="font-game text-sm text-cyan-300 mb-3">💸 PENDING WITHDRAWALS (${pending.length})</div>
         ${pending.length ? `<div class="overflow-x-auto"><table>
-          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th><th>Actions</th></tr></thead>
+          <thead><tr><th>User</th><th>Amount</th><th>Number</th><th>Method</th><th>Time</th><th>Actions</th></tr></thead>
           <tbody>${pending.map(t => {
             const u = usersCache.find(x => x.id === t.userId);
             return `<tr>
-              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-xs">${escapeHtml(u?.username||t.username||'-')}</td>
               <td class="text-red-300 font-bold">৳${fmt(Math.abs(t.amount||0))}</td>
+              <td class="text-xs text-cyan-300 font-mono">${escapeHtml(t.number||'-')}</td>
               <td class="text-xs">${escapeHtml(t.method||'-')}</td>
               <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
               <td>
-                <button onclick="approveWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
+                         <button onclick="approveWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
                 <button onclick="rejectWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/20 text-red-300">Reject</button>
               </td>
             </tr>`;
@@ -1051,12 +1055,13 @@ function renderWithdrawals(){
       <div class="glass card p-4">
         <div class="font-game text-sm text-cyan-300 mb-3">✅ RECENT WITHDRAWALS (${completed.length})</div>
         ${completed.length ? `<div class="overflow-x-auto"><table>
-          <thead><tr><th>User</th><th>Amount</th><th>Time</th></tr></thead>
+          <thead><tr><th>User</th><th>Amount</th><th>Number</th><th>Time</th></tr></thead>
           <tbody>${completed.map(t => {
             const u = usersCache.find(x => x.id === t.userId);
             return `<tr>
-              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-xs">${escapeHtml(u?.username||t.username||'-')}</td>
               <td class="text-red-300 font-bold">৳${fmt(Math.abs(t.amount||0))}</td>
+              <td class="text-xs text-cyan-300 font-mono">${escapeHtml(t.number||'-')}</td>
               <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
             </tr>`;
           }).join('')}</tbody>
@@ -1104,7 +1109,8 @@ window.rejectWithdrawal = async function(txId){
     await audit('WITHDRAWAL_REJECT', 'transaction', txId);
   } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
 };
-  // ==================== GAME MODES ====================
+  
+// ==================== GAME MODES ====================
 function renderModes(){
   $('adminMain').innerHTML = `
     <div class="page space-y-4">
