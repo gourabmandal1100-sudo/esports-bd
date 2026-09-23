@@ -8,47 +8,43 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
-  :root{
-    --navy:#070b1c; --navy2:#0d1330; --cyan:#00e5ff; --yellow:#ffd60a;
-    --purple:#a855f7; --green:#22ff88; --red:#ff3b5c;
-  }
+  :root{--navy:#070b1c;--cyan:#00e5ff;--purple:#a855f7;--green:#22ff88;--red:#ff3b5c;}
   *{font-family:'Inter',sans-serif;}
   h1,h2,h3,.font-game{font-family:'Orbitron',sans-serif;letter-spacing:.5px;}
-  body{background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(0,229,255,.15), transparent 60%),
-    radial-gradient(900px 500px at 110% 10%, rgba(168,85,247,.15), transparent 60%),
-    var(--navy); color:#e7ecff; min-height:100vh;}
-  .glass{background:rgba(20,28,60,.55); backdrop-filter:blur(14px); border:1px solid rgba(120,160,255,.15);}
+  body{background:radial-gradient(1200px 600px at 10% -10%, rgba(0,229,255,.15), transparent 60%),radial-gradient(900px 500px at 110% 10%, rgba(168,85,247,.15), transparent 60%),var(--navy);color:#e7ecff;min-height:100vh;}
+  .glass{background:rgba(20,28,60,.55);backdrop-filter:blur(14px);border:1px solid rgba(120,160,255,.15);}
   .card{border-radius:16px;}
-  .btn{border-radius:10px; font-weight:700; transition:.2s; cursor:pointer;}
+  .btn{border-radius:10px;font-weight:700;transition:.2s;cursor:pointer;}
   .btn:active{transform:scale(.97);}
-  .input{background:rgba(255,255,255,.05); border:1px solid rgba(120,160,255,.2); border-radius:10px; padding:10px 12px; width:100%; color:#fff; outline:none; font-size:13px;}
+  .input{background:rgba(255,255,255,.05);border:1px solid rgba(120,160,255,.2);border-radius:10px;padding:10px 12px;width:100%;color:#fff;outline:none;font-size:13px;}
   .input:focus{border-color:var(--cyan);}
   .glow-cyan{box-shadow:0 0 20px rgba(0,229,255,.25);}
   .neon-text{text-shadow:0 0 8px currentColor;}
-  .sidebar{background:rgba(7,11,28,.95); border-right:1px solid rgba(120,160,255,.15);}
-  .nav-item{padding:12px 16px; border-radius:10px; display:flex; align-items:center; gap:10px; cursor:pointer; font-size:14px; transition:.2s; color:#a8b6dd;}
-  .nav-item:hover{background:rgba(0,229,255,.08); color:#fff;}
-  .nav-item.active{background:linear-gradient(90deg, rgba(0,229,255,.2), rgba(168,85,247,.2)); color:#00e5ff; border-left:3px solid #00e5ff;}
-  .nav-item .nav-badge{margin-left:auto; background:#ff3b5c; color:#fff; font-size:10px; padding:2px 7px; border-radius:999px; font-weight:700;}
-  table{width:100%; border-collapse:collapse; font-size:13px;}
-  th,td{padding:10px; text-align:left; border-bottom:1px solid rgba(120,160,255,.1);}
-  th{color:#8ea0cc; font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:.5px;}
+  .sidebar{background:rgba(7,11,28,.95);border-right:1px solid rgba(120,160,255,.15);}
+  .nav-item{padding:12px 16px;border-radius:10px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;transition:.2s;color:#a8b6dd;}
+  .nav-item:hover{background:rgba(0,229,255,.08);color:#fff;}
+  .nav-item.active{background:linear-gradient(90deg, rgba(0,229,255,.2), rgba(168,85,247,.2));color:#00e5ff;border-left:3px solid #00e5ff;}
+  .nav-item .nav-badge{margin-left:auto;background:#ff3b5c;color:#fff;font-size:10px;padding:2px 7px;border-radius:999px;font-weight:700;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(120,160,255,.1);}
+  th{color:#8ea0cc;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
   tr:hover td{background:rgba(0,229,255,.03);}
-  .stat{padding:16px; border-radius:14px; background:linear-gradient(135deg, rgba(0,229,255,.08), rgba(168,85,247,.08)); border:1px solid rgba(120,160,255,.15);}
-  .badge{padding:3px 9px; border-radius:999px; font-size:10px; font-weight:600;}
+  .stat{padding:16px;border-radius:14px;background:linear-gradient(135deg, rgba(0,229,255,.08), rgba(168,85,247,.08));border:1px solid rgba(120,160,255,.15);}
+  .badge{padding:3px 9px;border-radius:999px;font-size:10px;font-weight:600;}
   @keyframes fadeIn{from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);}}
   .page{animation:fadeIn .25s ease;}
-  .chat-thread{max-height:55vh; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:12px; background:rgba(0,0,0,.15); border-radius:12px;}
-  .msg-bubble{padding:10px 14px; border-radius:16px; max-width:75%; font-size:13px; line-height:1.5; word-wrap:break-word;}
-  .msg-admin{background:linear-gradient(135deg, rgba(0,229,255,.25), rgba(168,85,247,.25)); border:1px solid rgba(0,229,255,.35); border-bottom-right-radius:4px; align-self:flex-end;}
-  .msg-user{background:linear-gradient(135deg, rgba(34,255,136,.2), rgba(0,229,255,.15)); border:1px solid rgba(34,255,136,.3); border-bottom-left-radius:4px; align-self:flex-start;}
-  .msg-meta{font-size:10px; color:#8ea0cc; margin-top:2px;}
+  .chat-thread{max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:12px;background:rgba(0,0,0,.15);border-radius:12px;}
+  .msg-bubble{padding:10px 14px;border-radius:16px;max-width:75%;font-size:13px;line-height:1.5;word-wrap:break-word;white-space:pre-wrap;}
+  .msg-admin{background:linear-gradient(135deg, rgba(0,229,255,.25), rgba(168,85,247,.25));border:1px solid rgba(0,229,255,.35);border-bottom-right-radius:4px;align-self:flex-end;}
+  .msg-user{background:linear-gradient(135deg, rgba(34,255,136,.2), rgba(0,229,255,.15));border:1px solid rgba(34,255,136,.3);border-bottom-left-radius:4px;align-self:flex-start;}
+  .msg-meta{font-size:10px;color:#8ea0cc;margin-top:2px;}
+  .conv-item{padding:12px;border-radius:12px;cursor:pointer;transition:.2s;border:1px solid transparent;}
+  .conv-item:hover{background:rgba(0,229,255,.05);}
+  .conv-item.active{background:linear-gradient(90deg, rgba(0,229,255,.15), rgba(168,85,247,.1));border-color:rgba(0,229,255,.4);}
 </style>
 </head>
 <body>
 
-<!-- ================= LOGIN ================= -->
 <div id="loginScreen" class="min-h-screen flex items-center justify-center p-5">
   <div class="glass card p-8 w-full max-w-md glow-cyan">
     <div class="text-center mb-6">
@@ -58,19 +54,23 @@
       <p class="text-xs text-cyan-300 tracking-widest">E-SPORTS BD • RESTRICTED</p>
     </div>
     <div class="space-y-3">
-      <input id="adminUser" class="input" placeholder="Admin Username"/>
+      <input id="adminUser" class="input" placeholder="Admin Email" type="email"/>
       <input id="adminPass" type="password" class="input" placeholder="Password"/>
-      <button onclick="doAdminLogin()" class="btn w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-black glow-cyan mt-2">AUTHENTICATE</button>
+      <button id="loginBtn" onclick="doAdminLogin()" class="btn w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-black glow-cyan mt-2">AUTHENTICATE</button>
+      <div id="loginMsg" class="text-xs text-center text-red-300 hidden"></div>
     </div>
     <p class="text-[10px] text-center text-slate-400 mt-5">Unauthorized access is prohibited. All actions logged.</p>
-    <p class="text-[10px] text-center text-slate-500 mt-2">Default → user: <b>admin</b> / pass: <b>admin123</b></p>
   </div>
 </div>
 
-<!-- ================= ADMIN DASHBOARD ================= -->
+<div id="loadingScreen" class="hidden min-h-screen flex items-center justify-center">
+  <div class="text-center">
+    <div class="inline-block w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+    <p class="text-cyan-300 mt-4 text-sm">Verifying admin access...</p>
+  </div>
+</div>
 <div id="adminApp" class="hidden min-h-screen flex">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar w-60 fixed h-full hidden md:flex flex-col z-30">
     <div class="p-5 border-b border-white/10">
       <div class="font-game text-lg text-cyan-300 neon-text">E-SPORTS BD</div>
@@ -90,14 +90,14 @@
       <div class="nav-item" data-page="audit" onclick="goAdmin('audit')">📜 Audit Log</div>
     </nav>
     <div class="p-3 border-t border-white/10">
+      <div class="text-xs text-cyan-300 mb-2 truncate" id="adminEmail">-</div>
       <button onclick="adminLogout()" class="btn w-full py-2 text-sm bg-red-500/20 text-red-300">LOGOUT</button>
     </div>
   </aside>
 
-  <!-- MOBILE TOP NAV -->
   <div class="md:hidden fixed top-0 left-0 right-0 z-40 glass border-b border-cyan-500/20">
     <div class="flex items-center justify-between px-3 py-2">
-      <div class="font-game text-sm text-cyan-300">E-SPORTS BD</div>
+      <div class="font-game text-sm text-cyan-300">E-SPORTS BD ADMIN</div>
       <button onclick="toggleMobileNav()" class="btn px-3 py-1 text-xs bg-cyan-500/20 text-cyan-300">☰</button>
     </div>
     <div id="mobileNav" class="hidden grid grid-cols-3 gap-1 p-2 text-xs">
@@ -108,12 +108,13 @@
       <div class="nav-item" onclick="goAdmin('results');toggleMobileNav()">📋 Res</div>
       <div class="nav-item" onclick="goAdmin('deposits');toggleMobileNav()">💰 Dep</div>
       <div class="nav-item" onclick="goAdmin('withdrawals');toggleMobileNav()">💸 Wd</div>
+      <div class="nav-item" onclick="goAdmin('modes');toggleMobileNav()">🎮 Modes</div>
+      <div class="nav-item" onclick="goAdmin('banners');toggleMobileNav()">🖼️ Ban</div>
       <div class="nav-item" onclick="goAdmin('notifications');toggleMobileNav()">🔔 Noti</div>
       <div class="nav-item" onclick="goAdmin('audit');toggleMobileNav()">📜 Log</div>
     </div>
   </div>
 
-  <!-- MAIN -->
   <main class="flex-1 md:ml-60 w-full pt-14 md:pt-0">
     <header class="sticky top-0 z-20 glass border-b border-cyan-500/20 px-5 py-3 hidden md:flex items-center justify-between">
       <div>
@@ -126,110 +127,266 @@
   </main>
 </div>
 
-<script>
+<script type="module">
 /* ============================================================
-   E-SPORTS BD — ADMIN PANEL
-   Includes: Messages feature (admin ⇄ user)
-   Shares DB with user panel via localStorage key: esbd_db
-   ⚠️  DEMO ONLY — production-এ server-side auth+RLS লাগবে।
+   E-SPORTS BD — ADMIN PANEL (Firebase Version)
    ============================================================ */
 
-const DB_KEY = 'esbd_db';
-const ADMIN_KEY = 'esbd_admin';
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'admin123';
+import {
+  auth, db,
+  signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  doc, getDoc, collection, getDocs, query, where, orderBy, limit,
+  onSnapshot, addDoc, updateDoc, deleteDoc, setDoc,
+  serverTimestamp, increment, runTransaction,
+  fmt, bdt, escapeHtml, shortTime
+} from './firebase-config.js';
+
+let adminUser = null;
+let adminData = null;
+let currentPage = 'dashboard';
+let usersCache = [];
+let messagesCache = [];
+let transactionsCache = [];
+let tournamentsCache = [];
+let notificationsCache = [];
+let auditCache = [];
+let gameModesCache = [];
+let bannersCache = [];
+let activeChatUserId = null;
+let unsubscribers = [];
 
 const $ = id => document.getElementById(id);
-const uid = () => 'id_' + Math.random().toString(36).slice(2, 10);
-const fmt = n => Number(n||0).toLocaleString('en-BD');
-const bdt = n => '৳' + fmt(n);
-const shortTime = iso => new Date(iso).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-const escapeHtml = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  // ==================== LOGIN ====================
+window.doAdminLogin = async function(){
+  const email = $('adminUser').value.trim();
+  const pass = $('adminPass').value;
+  const msgEl = $('loginMsg');
+  const btn = $('loginBtn');
 
-function loadDB(){
-  let d = localStorage.getItem(DB_KEY);
-  if(!d){ d = JSON.stringify({users:[],gameModes:[],tournaments:[],transactions:[],notifications:[],banners:[],results:[],messages:[],auditLogs:[],settings:{minDeposit:50,minWithdraw:100}}); localStorage.setItem(DB_KEY, d); }
-  const db = JSON.parse(d);
-  if(!db.messages) db.messages = [];
-  if(!db.auditLogs) db.auditLogs = [];
-  if(!db.results) db.results = [];
-  if(!db.transactions) db.transactions = [];
-  return db;
-}
-function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+  if(!email || !pass){ showLoginMsg('Email and password required'); return; }
 
-/* ---------- Auth ---------- */
-function doAdminLogin(){
-  const u = $('adminUser').value.trim();
-  const p = $('adminPass').value;
-  if(u === ADMIN_USER && p === ADMIN_PASS){
-    sessionStorage.setItem(ADMIN_KEY, '1');
-    audit('LOGIN','admin','self','success');
-    $('loginScreen').classList.add('hidden');
-    $('adminApp').classList.remove('hidden');
-    goAdmin('dashboard');
-  }else{
-    audit('LOGIN_FAILED', u, 'self','failed');
-    Swal.fire({icon:'error',title:'Access Denied',background:'#0d1330',color:'#fff'});
+  btn.disabled = true;
+  btn.textContent = 'AUTHENTICATING...';
+  msgEl.classList.add('hidden');
+
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    const snap = await getDoc(doc(db, 'users', cred.user.uid));
+    if(!snap.exists()){
+      await signOut(auth);
+      throw new Error('User record not found in database');
+    }
+    const data = snap.data();
+    if(data.role !== 'admin'){
+      await signOut(auth);
+      throw new Error('Access denied — not an admin');
+    }
+    if(data.blocked === true){
+      await signOut(auth);
+      throw new Error('Account is blocked');
+    }
+  } catch(e){
+    console.error('Login error:', e);
+    let msg = e.message || 'Login failed';
+    if(e.code === 'auth/invalid-credential') msg = 'Wrong email or password';
+    if(e.code === 'auth/user-not-found') msg = 'No user with this email';
+    if(e.code === 'auth/wrong-password') msg = 'Wrong password';
+    showLoginMsg(msg);
+    btn.disabled = false;
+    btn.textContent = 'AUTHENTICATE';
   }
-}
-function adminLogout(){
-  audit('LOGOUT','admin','self','success');
-  sessionStorage.removeItem(ADMIN_KEY);
-  location.reload();
-}
-function toggleMobileNav(){ $('mobileNav').classList.toggle('hidden'); }
+};
 
-/* ---------- Audit ---------- */
-function audit(action,target,recordId,status){
-  const db = loadDB();
-  db.auditLogs.push({
-    id: uid(), adminId: ADMIN_USER, action, target, recordId,
-    status, at: new Date().toISOString()
+function showLoginMsg(msg){
+  const el = $('loginMsg');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+// ==================== AUTH STATE ====================
+onAuthStateChanged(auth, async (user) => {
+  if(user){
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if(!snap.exists() || snap.data().role !== 'admin'){
+        await signOut(auth);
+        return;
+      }
+      adminUser = user;
+      adminData = { id: user.uid, ...snap.data() };
+      $('loginScreen').classList.add('hidden');
+      $('loadingScreen').classList.remove('hidden');
+
+      setTimeout(() => {
+        $('loadingScreen').classList.add('hidden');
+        $('adminApp').classList.remove('hidden');
+        $('adminEmail').textContent = adminUser.email || '';
+        startRealtimeListeners();
+        goAdmin('dashboard');
+      }, 400);
+    } catch(e){
+      console.error('Auth state error:', e);
+      await signOut(auth);
+    }
+  } else {
+    adminUser = null;
+    adminData = null;
+    stopRealtimeListeners();
+    $('adminApp').classList.add('hidden');
+    $('loadingScreen').classList.add('hidden');
+    $('loginScreen').classList.remove('hidden');
+    $('loginBtn').disabled = false;
+    $('loginBtn').textContent = 'AUTHENTICATE';
+  }
+});
+
+// ==================== LOGOUT ====================
+window.adminLogout = async function(){
+  const result = await Swal.fire({
+    title: 'Logout?',
+    text: 'You will be signed out of admin panel.',
+    icon: 'question',
+    showCancelButton: true,
+    background: '#0d1330',
+    color: '#fff',
+    confirmButtonColor: '#ff3b5c'
   });
-  saveDB(db);
+  if(result.isConfirmed){
+    stopRealtimeListeners();
+    await signOut(auth);
+  }
+};
+
+// ==================== REALTIME LISTENERS ====================
+function startRealtimeListeners(){
+  stopRealtimeListeners();
+
+  unsubscribers.push(
+    onSnapshot(collection(db, 'users'), (snap) => {
+      usersCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'users') renderUsers();
+      if(currentPage === 'dashboard') renderDashboard();
+      if(currentPage === 'messages') renderMessagesAdmin();
+    }, err => console.error('users listener:', err))
+  );
+
+  const msgQ = query(collection(db, 'messages'), orderBy('at', 'desc'), limit(300));
+  unsubscribers.push(
+    onSnapshot(msgQ, (snap) => {
+      messagesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      updateMsgBadge();
+      if(currentPage === 'messages') renderMessagesAdmin();
+    }, err => console.error('messages listener:', err))
+  );
+
+  const txQ = query(collection(db, 'transactions'), orderBy('at', 'desc'), limit(200));
+  unsubscribers.push(
+    onSnapshot(txQ, (snap) => {
+      transactionsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'deposits') renderDeposits();
+      if(currentPage === 'withdrawals') renderWithdrawals();
+      if(currentPage === 'dashboard') renderDashboard();
+    }, err => console.error('transactions listener:', err))
+  );
+
+  unsubscribers.push(
+    onSnapshot(collection(db, 'tournaments'), (snap) => {
+      tournamentsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'tournaments') renderTournamentsAdmin();
+      if(currentPage === 'dashboard') renderDashboard();
+    }, err => console.error('tournaments listener:', err))
+  );
+
+  const notifQ = query(collection(db, 'notifications'), orderBy('at', 'desc'), limit(100));
+  unsubscribers.push(
+    onSnapshot(notifQ, (snap) => {
+      notificationsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'notifications') renderNotificationsAdmin();
+    }, err => console.error('notifications listener:', err))
+  );
+
+  const auditQ = query(collection(db, 'auditLogs'), orderBy('at', 'desc'), limit(200));
+  unsubscribers.push(
+    onSnapshot(auditQ, (snap) => {
+      auditCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'audit') renderAudit();
+    }, err => console.error('audit listener:', err))
+  );
+
+  unsubscribers.push(
+    onSnapshot(collection(db, 'gameModes'), (snap) => {
+      gameModesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'modes') renderModes();
+    }, err => console.error('gameModes listener:', err))
+  );
+
+  unsubscribers.push(
+    onSnapshot(collection(db, 'banners'), (snap) => {
+      bannersCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if(currentPage === 'banners') renderBanners();
+    }, err => console.error('banners listener:', err))
+  );
 }
 
-/* ---------- Router ---------- */
-let currentPage = 'dashboard';
-function goAdmin(page){
-  if(!sessionStorage.getItem(ADMIN_KEY)) return;
+function stopRealtimeListeners(){
+  unsubscribers.forEach(u => { try { u(); } catch(e){} });
+  unsubscribers = [];
+}
+
+// ==================== ROUTER ====================
+window.goAdmin = function(page){
+  if(!adminUser) return;
   currentPage = page;
   document.querySelectorAll('.nav-item[data-page]').forEach(el=>{
-    el.classList.toggle('active', el.dataset.page===page);
+    el.classList.toggle('active', el.dataset.page === page);
   });
   const pt = $('pageTitle'); if(pt) pt.textContent = page.toUpperCase();
-  const map = {
-    dashboard: renderDashboard, users: renderUsers, messages: renderMessagesAdmin,
-    tournaments: renderTournamentsAdmin, results: renderResultsAdmin,
-    deposits: renderDeposits, withdrawals: renderWithdrawals,
-    modes: renderModes, banners: renderBanners,
-    notifications: renderNotificationsAdmin, audit: renderAudit
-  };
-  $('adminMain').innerHTML = '';
-  map[page] && map[page]();
-  updateMsgBadge();
-}
 
-/* ---------- Dashboard ---------- */
+  const map = {
+    dashboard: renderDashboard,
+    users: renderUsers,
+    messages: renderMessagesAdmin,
+    tournaments: renderTournamentsAdmin,
+    results: renderResultsAdmin,
+    deposits: renderDeposits,
+    withdrawals: renderWithdrawals,
+    modes: renderModes,
+    banners: renderBanners,
+    notifications: renderNotificationsAdmin,
+    audit: renderAudit
+  };
+
+  $('adminMain').innerHTML = '';
+  const fn = map[page];
+  if(fn) fn();
+  else $('adminMain').innerHTML = `<div class="page glass card p-8 text-center text-slate-400">Page "${page}" — coming soon</div>`;
+  updateMsgBadge();
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+
+window.toggleMobileNav = function(){
+  $('mobileNav').classList.toggle('hidden');
+};
+
+// ==================== DASHBOARD ====================
 function renderDashboard(){
-  const db = loadDB();
-  const users = db.users.length;
-  const activeUsers = db.users.filter(u=>!u.blocked).length;
-  const t = db.tournaments;
-  const upcoming = t.filter(x=>x.status==='upcoming').length;
-  const ongoing = t.filter(x=>x.status==='ongoing').length;
-  const completed = t.filter(x=>x.status==='completed').length;
-  const totalDep = db.transactions.filter(x=>x.type==='deposit' && x.status==='completed').reduce((s,x)=>s+x.amount,0);
-  const totalWit = db.transactions.filter(x=>x.type==='withdrawal' && x.status==='completed').reduce((s,x)=>s+Math.abs(x.amount),0);
-  const prizePaid = db.transactions.filter(x=>x.type==='prize').reduce((s,x)=>s+x.amount,0);
-  const pendW = db.transactions.filter(x=>x.type==='withdrawal_request' && x.status==='pending').length;
-  const pendD = db.transactions.filter(x=>x.type==='deposit_request' && x.status==='pending').length;
-  const unreadMsgs = db.messages.filter(m => m.from==='user' && !m.read).length;
+  const users = usersCache;
+  const totalUsers = users.length;
+  const activeUsers = users.filter(u => !u.blocked).length;
+  const unreadMsgs = messagesCache.filter(m => m.from === 'user' && !m.read).length;
+  const t = tournamentsCache;
+  const upcoming = t.filter(x => x.status === 'upcoming').length;
+  const ongoing = t.filter(x => x.status === 'ongoing').length;
+  const completed = t.filter(x => x.status === 'completed').length;
+  const totalDep = transactionsCache.filter(x => x.type === 'deposit' && x.status === 'completed').reduce((s,x) => s + (x.amount||0), 0);
+  const totalWit = transactionsCache.filter(x => x.type === 'withdrawal' && x.status === 'completed').reduce((s,x) => s + Math.abs(x.amount||0), 0);
+  const prizePaid = transactionsCache.filter(x => x.type === 'prize').reduce((s,x) => s + (x.amount||0), 0);
+  const pendW = transactionsCache.filter(x => x.type === 'withdrawal_request' && x.status === 'pending').length;
+  const pendD = transactionsCache.filter(x => x.type === 'deposit_request' && x.status === 'pending').length;
 
   $('adminMain').innerHTML = `
     <div class="page grid grid-cols-2 md:grid-cols-4 gap-3">
-      ${stat('👥 Total Users', users, 'text-cyan-300')}
+      ${stat('👥 Total Users', totalUsers, 'text-cyan-300')}
       ${stat('✅ Active Users', activeUsers, 'text-green-300')}
       ${stat('💬 Unread Messages', unreadMsgs, 'text-pink-300')}
       ${stat('🏆 Tournaments', t.length, 'text-yellow-300')}
@@ -244,29 +401,25 @@ function renderDashboard(){
     </div>
   `;
 }
+
 function stat(label, value, color){
   return `<div class="stat">
     <div class="text-[10px] text-slate-400 uppercase tracking-wider">${label}</div>
     <div class="font-game text-xl mt-1 ${color} neon-text">${value}</div>
   </div>`;
-}
-
-/* ---------- Users ---------- */
+    }
+  // ==================== USERS ====================
 function renderUsers(){
-  const db = loadDB();
   $('adminMain').innerHTML = `
     <div class="page glass card p-4">
-      <input id="userSearch" oninput="filterUsers()" class="input mb-3" placeholder="🔍 Search username / email / phone / ID"/>
+      <input id="userSearch" oninput="filterUsers()" class="input mb-3" placeholder="🔍 Search username / email / phone / UID / Code"/>
       <div class="overflow-x-auto">
-        <table id="usersTable">
+        <table>
           <thead>
-            <tr>
-              <th>User</th><th>Email / Phone</th><th>FF IGN/UID</th>
-              <th>Wallet</th><th>Status</th><th>Actions</th>
-            </tr>
+            <tr><th>User</th><th>Contact</th><th>FF IGN/UID</th><th>Wallet</th><th>Status</th><th>Actions</th></tr>
           </thead>
           <tbody id="usersBody">
-            ${db.users.length ? db.users.map(u => userRow(u)).join('') :
+            ${usersCache.length ? usersCache.map(u => userRow(u)).join('') :
               `<tr><td colspan="6" class="text-center text-slate-400 py-6">No users yet</td></tr>`}
           </tbody>
         </table>
@@ -274,22 +427,24 @@ function renderUsers(){
     </div>
   `;
 }
+
 function userRow(u){
   const bal = (u.wallet?.available||0) + (u.wallet?.winning||0);
+  const search = `${u.username||''} ${u.email||''} ${u.phone||''} ${u.ffUid||''} ${u.userCode||''}`.toLowerCase();
   return `
-    <tr data-search="${(u.username+' '+u.email+' '+u.phone+' '+u.userCode).toLowerCase()}">
+    <tr data-search="${escapeHtml(search)}">
       <td>
         <div class="flex items-center gap-2">
-          <img src="${u.avatar}" class="w-8 h-8 rounded-full"/>
+          <img src="${u.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=x'}" class="w-8 h-8 rounded-full"/>
           <div>
-            <div class="font-semibold text-xs">${escapeHtml(u.username)}</div>
-            <div class="text-[10px] text-slate-400">${u.userCode}</div>
+            <div class="font-semibold text-xs">${escapeHtml(u.username||'-')}</div>
+            <div class="text-[10px] text-slate-400">${escapeHtml(u.userCode||'-')}</div>
           </div>
         </div>
       </td>
       <td>
-        <div class="text-xs">${escapeHtml(u.email)}</div>
-        <div class="text-[10px] text-slate-400">${escapeHtml(u.phone)}</div>
+        <div class="text-xs">${escapeHtml(u.email||'-')}</div>
+        <div class="text-[10px] text-slate-400">${escapeHtml(u.phone||'-')}</div>
       </td>
       <td>
         <div class="text-xs">${escapeHtml(u.ffIgn||'-')}</div>
@@ -311,86 +466,900 @@ function userRow(u){
     </tr>
   `;
 }
-function filterUsers(){
-  const q = $('userSearch').value.toLowerCase();
+
+window.filterUsers = function(){
+  const q = ($('userSearch').value || '').toLowerCase();
   document.querySelectorAll('#usersBody tr').forEach(tr=>{
     const hay = tr.dataset.search||'';
     tr.style.display = hay.includes(q) ? '' : 'none';
   });
-}
-function toggleBlock(id){
-  const db = loadDB();
-  const idx = db.users.findIndex(u=>u.id===id);
-  if(idx<0) return;
-  const u = db.users[idx];
-  u.blocked = !u.blocked;
-  saveDB(db);
-  audit(u.blocked?'USER_BLOCK':'USER_UNBLOCK','user',id,'success');
-  renderUsers();
-}
-function viewUser(id){
-  const db = loadDB();
-  const u = db.users.find(x=>x.id===id);
+};
+
+window.toggleBlock = async function(id){
+  const u = usersCache.find(x => x.id === id);
   if(!u) return;
-  const txs = db.transactions.filter(t=>t.userId===id).slice(-10).reverse();
+  const isBlocking = !u.blocked;
+  const result = await Swal.fire({
+    title: isBlocking ? 'Block user?' : 'Unblock user?',
+    text: `${u.username||'User'} will be ${isBlocking?'blocked':'unblocked'}.`,
+    icon: 'warning', showCancelButton: true,
+    background: '#0d1330', color: '#fff',
+    confirmButtonColor: isBlocking ? '#ff3b5c' : '#22ff88'
+  });
+  if(!result.isConfirmed) return;
+  try {
+    await updateDoc(doc(db, 'users', id), { blocked: !u.blocked });
+    await audit(isBlocking?'USER_BLOCK':'USER_UNBLOCK', 'user', id);
+    Swal.fire({icon:'success', title:'Done', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+window.viewUser = function(id){
+  const u = usersCache.find(x => x.id === id);
+  if(!u) return;
+  const txs = transactionsCache.filter(t => t.userId === id).slice(0,10);
   Swal.fire({
-    title: escapeHtml(u.username),
-    width: 420,
+    title: escapeHtml(u.username || 'User'),
+    width: 440,
     html: `
       <div style="text-align:left; font-size:12px; color:#cbd5ff">
-        <div><b>ID:</b> ${u.userCode}</div>
-        <div><b>Email:</b> ${escapeHtml(u.email)}</div>
-        <div><b>Phone:</b> ${escapeHtml(u.phone)}</div>
+        <div><b>ID:</b> ${escapeHtml(u.userCode||'-')}</div>
+        <div><b>Email:</b> ${escapeHtml(u.email||'-')}</div>
+        <div><b>Phone:</b> ${escapeHtml(u.phone||'-')}</div>
         <div><b>FF UID:</b> ${escapeHtml(u.ffUid||'-')}</div>
         <div><b>FF IGN:</b> ${escapeHtml(u.ffIgn||'-')}</div>
-        <div><b>Wallet:</b> ৳${fmt((u.wallet?.available||0)+(u.wallet?.winning||0))} (A: ৳${fmt(u.wallet?.available||0)} / W: ৳${fmt(u.wallet?.winning||0)})</div>
+        <div><b>Wallet:</b> ৳${fmt((u.wallet?.available||0)+(u.wallet?.winning||0))}</div>
+        <div style="opacity:.7">Available: ৳${fmt(u.wallet?.available||0)} • Winning: ৳${fmt(u.wallet?.winning||0)}</div>
         <div><b>Matches:</b> ${u.stats?.matches||0} • <b>Wins:</b> ${u.stats?.wins||0}</div>
         <hr style="margin:8px 0;border-color:#20305e"/>
         <div><b>Recent Transactions:</b></div>
         ${txs.length ? txs.map(t=>`<div style="padding:3px 0;border-bottom:1px solid rgba(120,160,255,.1)">
-          ${t.type} • ৳${fmt(Math.abs(t.amount))} • ${t.status}
-        </div>`).join('') : '<div>None</div>'}
+          ${escapeHtml(t.type||'-')} • ৳${fmt(Math.abs(t.amount||0))} • <span style="opacity:.7">${escapeHtml(t.status||'-')}</span>
+        </div>`).join('') : '<div style="opacity:.7">None</div>'}
       </div>`,
     background:'#0d1330', color:'#fff', confirmButtonColor:'#00e5ff'
   });
-}
+};
 
-/* ---------- MESSAGES (NEW) ---------- */
-let activeChatUserId = null;
+window.openChat = function(userId){
+  activeChatUserId = userId;
+  goAdmin('messages');
+};
+
+// ==================== MESSAGES ====================
 function renderMessagesAdmin(){
-  const db = loadDB();
-  const users = db.users;
+  const users = usersCache;
   const unreadByUser = {};
-  db.messages.filter(m => m.from==='user' && !m.read).forEach(m=>{
+  messagesCache.filter(m => m.from === 'user' && !m.read).forEach(m=>{
     unreadByUser[m.userId] = (unreadByUser[m.userId]||0) + 1;
+  });
+
+  const sortedUsers = [...users].sort((a,b) => {
+    const aLast = messagesCache.find(m => m.userId===a.id)?.at;
+    const bLast = messagesCache.find(m => m.userId===b.id)?.at;
+    if(!aLast && !bLast) return 0;
+    if(!aLast) return 1;
+    if(!bLast) return -1;
+    return (bLast?.seconds||0) - (aLast?.seconds||0);
   });
 
   $('adminMain').innerHTML = `
     <div class="page grid md:grid-cols-3 gap-4">
-      <!-- Users list -->
       <div class="glass card p-3 md:col-span-1">
         <div class="font-game text-sm text-cyan-300 neon-text mb-3">💬 CONVERSATIONS</div>
         <input id="msgSearch" oninput="filterMsgUsers()" class="input mb-3" placeholder="🔍 Search user"/>
         <div id="msgUserList" class="space-y-2 overflow-y-auto" style="max-height:65vh">
-          ${users.length ? users.map(u => {
-            const last = db.messages.filter(m=>m.userId===u.id).slice(-1)[0];
+          ${sortedUsers.length ? sortedUsers.map(u => {
+            const last = messagesCache.filter(m=>m.userId===u.id)[0];
             const unread = unreadByUser[u.id] || 0;
             return `
-              <div class="msg-user-row glass card p-3 cursor-pointer hover:bg-white/5 ${activeChatUserId===u.id?'border-cyan-400/50':''}"
-                   data-search="${(u.username+' '+u.userCode+' '+u.email).toLowerCase()}"
+              <div class="conv-item msg-user-row ${activeChatUserId===u.id?'active':''}"
+                   data-search="${escapeHtml(((u.username||'')+' '+(u.userCode||'')).toLowerCase())}"
                    onclick="openChat('${u.id}')">
                 <div class="flex items-center gap-2">
-                  <img src="${u.avatar}" class="w-9 h-9 rounded-full"/>
+                  <img src="${u.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=x'}" class="w-9 h-9 rounded-full"/>
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                      <div class="font-semibold text-xs truncate">${escapeHtml(u.username)}</div>
+                      <div class="font-semibold text-xs truncate">${escapeHtml(u.username||'-')}</div>
                       ${unread?`<span class="badge bg-red-500/30 text-red-300">${unread}</span>`:''}
                     </div>
-                    <div class="text-[10px] text-slate-400 truncate">${last?escapeHtml(last.text.slice(0,30)):'No messages yet'}</div>
+                    <div class="text-[10px] text-slate-400 truncate">${last?escapeHtml((last.text||'').slice(0,40)):'No messages yet'}</div>
                   </div>
                 </div>
               </div>
             `;
           }).join('') : `<div class="text-slate-400 text-xs text-center py-6">No users yet</div>`}
         </div>
-  
+      </div>
+
+      <div class="glass card p-3 md:col-span-2 flex flex-col" style="min-height:70vh">
+        ${activeChatUserId ? renderChatPanel() : `
+          <div class="flex-1 flex items-center justify-center text-slate-400 text-sm">
+            👈 Select a user to start chatting
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+  scrollChatToBottom();
+}
+
+function renderChatPanel(){
+  const u = usersCache.find(x => x.id === activeChatUserId);
+  if(!u) return `<div class="text-slate-400 text-center py-8">User not found</div>`;
+  const msgs = messagesCache
+    .filter(m => m.userId === activeChatUserId)
+    .sort((a,b) => (a.at?.seconds||0) - (b.at?.seconds||0));
+
+  return `
+    <div class="flex items-center gap-2 pb-3 border-b border-white/10">
+      <img src="${u.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=x'}" class="w-10 h-10 rounded-full"/>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm truncate">${escapeHtml(u.username||'-')}</div>
+        <div class="text-[10px] text-slate-400">${escapeHtml(u.email||'-')}</div>
+      </div>
+      <button onclick="viewUser('${u.id}')" class="btn px-2 py-1 text-[10px] bg-cyan-500/20 text-cyan-300">View</button>
+    </div>
+
+    <div id="chatThread" class="chat-thread flex-1 my-3">
+      ${msgs.length ? msgs.map(m => chatBubble(m)).join('') : `
+        <div class="text-slate-400 text-xs text-center py-6">No messages yet. Send a greeting!</div>
+      `}
+    </div>
+
+    <div class="flex gap-2 pt-3 border-t border-white/10">
+      <input id="msgInput" class="input flex-1" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendAdminMsg()"/>
+      <button onclick="sendAdminMsg()" class="btn px-4 py-2 bg-cyan-500 text-black">Send</button>
+    </div>
+  `;
+}
+
+function chatBubble(m){
+  const isAdmin = m.from === 'admin';
+  return `
+    <div style="align-self:${isAdmin?'flex-end':'flex-start'}; max-width:75%">
+      <div class="msg-bubble ${isAdmin?'msg-admin':'msg-user'}">${escapeHtml(m.text||'')}</div>
+      <div class="msg-meta" style="text-align:${isAdmin?'right':'left'}">
+        ${isAdmin?'You':'User'} • ${shortTime(m.at)}
+      </div>
+    </div>
+  `;
+}
+
+window.filterMsgUsers = function(){
+  const q = ($('msgSearch').value || '').toLowerCase();
+  document.querySelectorAll('.msg-user-row').forEach(el=>{
+    const hay = el.dataset.search || '';
+    el.style.display = hay.includes(q) ? '' : 'none';
+  });
+};
+
+window.sendAdminMsg = async function(){
+  const input = $('msgInput');
+  if(!input) return;
+  const text = input.value.trim();
+  if(!text) return;
+  if(!activeChatUserId) return;
+  input.value = '';
+  try {
+    await addDoc(collection(db, 'messages'), {
+      userId: activeChatUserId,
+      from: 'admin',
+      to: activeChatUserId,
+      text, at: serverTimestamp(), read: false
+    });
+    const unread = messagesCache.filter(m => m.userId===activeChatUserId && m.from==='user' && !m.read);
+    for(const m of unread){
+      try { await updateDoc(doc(db, 'messages', m.id), { read: true }); } catch(e){}
+    }
+  } catch(e){
+    console.error('send msg error:', e);
+    Swal.fire({icon:'error', title:'Failed to send', text:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+function scrollChatToBottom(){
+  setTimeout(() => {
+    const el = $('chatThread');
+    if(el) el.scrollTop = el.scrollHeight;
+  }, 100);
+}
+  // ==================== TOURNAMENTS ====================
+function renderTournamentsAdmin(){
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🏆 CREATE TOURNAMENT</div>
+        <input id="tTitle" class="input mb-2" placeholder="Title (e.g., BR Solo Match)"/>
+        <select id="tMode" class="input mb-2">
+          <option value="br">BR Match</option>
+          <option value="duo">Duo BR</option>
+          <option value="pro">Pro League</option>
+          <option value="surv">Survival</option>
+          <option value="cs4">CS 4v4</option>
+          <option value="clash">Clash Squad</option>
+          <option value="head">Headshot</option>
+          <option value="custom">Custom</option>
+        </select>
+        <input id="tFee" type="number" class="input mb-2" placeholder="Entry Fee (৳)" value="20"/>
+        <input id="tPrize" type="number" class="input mb-2" placeholder="Prize Pool (৳)" value="500"/>
+        <input id="tSlots" type="number" class="input mb-2" placeholder="Total Slots" value="48"/>
+        <input id="tStart" type="datetime-local" class="input mb-2"/>
+        <button onclick="createTournament()" class="btn w-full py-2 bg-cyan-500 text-black">CREATE</button>
+      </div>
+
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 ALL TOURNAMENTS (${tournamentsCache.length})</div>
+        ${tournamentsCache.length ? tournamentsCache.map(t => tournamentAdminCard(t)).join('') :
+          `<div class="text-slate-400 text-xs text-center py-6">No tournaments yet</div>`}
+      </div>
+    </div>
+  `;
+}
+
+function tournamentAdminCard(t){
+  const filled = (t.players||[]).length;
+  const total = t.slots?.total || 48;
+  const statusColor = t.status==='upcoming'?'text-cyan-300':t.status==='ongoing'?'text-red-300':'text-slate-400';
+  const roomSet = t.room?.id && t.room?.password;
+  return `
+    <div class="p-3 rounded-lg bg-white/5 border border-white/10 mb-2">
+      <div class="font-semibold text-xs mb-1">${escapeHtml(t.title||'-')}</div>
+      <div class="text-[10px] text-slate-400">${escapeHtml(t.mode||'-')} • Entry: ৳${fmt(t.entryFee||0)} • Prize: ৳${fmt(t.prizePool||0)}</div>
+      <div class="text-[10px] mt-1">
+        <span class="${statusColor} font-semibold">${(t.status||'upcoming').toUpperCase()}</span>
+        • Slots: ${filled}/${total}
+      </div>
+      ${t.room?.time ? `<div class="text-[10px] mt-1 text-yellow-300">⏰ Room Time: ${escapeHtml(t.room.time)}</div>` : ''}
+      ${roomSet ? `
+        <div class="mt-2 p-2 rounded bg-cyan-500/10 border border-cyan-500/30 text-[10px]">
+          <div class="text-cyan-300 font-semibold mb-1">🎮 ROOM DETAILS</div>
+          <div class="text-slate-300">ID: <span class="text-cyan-300 font-mono font-bold">${escapeHtml(t.room.id)}</span></div>
+          <div class="text-slate-300">Pass: <span class="text-cyan-300 font-mono font-bold">${escapeHtml(t.room.password)}</span></div>
+        </div>
+      ` : `<div class="text-[9px] text-orange-300 mt-1">⚠ Room not set</div>`}
+      <div class="flex gap-1 flex-wrap mt-2">
+        <button onclick="openRoomDialog('${t.id}')" class="btn px-2 py-1 text-[9px] bg-yellow-500/20 text-yellow-300">${roomSet?'Edit Room':'Set Room'}</button>
+        <button onclick="viewPlayers('${t.id}')" class="btn px-2 py-1 text-[9px] bg-green-500/20 text-green-300">👥 Players (${filled})</button>
+        <button onclick="updateTournamentStatus('${t.id}','upcoming')" class="btn px-2 py-1 text-[9px] bg-cyan-500/20 text-cyan-300">U</button>
+        <button onclick="updateTournamentStatus('${t.id}','ongoing')" class="btn px-2 py-1 text-[9px] bg-red-500/20 text-red-300">O</button>
+        <button onclick="updateTournamentStatus('${t.id}','completed')" class="btn px-2 py-1 text-[9px] bg-slate-500/20 text-slate-300">C</button>
+        <button onclick="deleteTournament('${t.id}')" class="btn px-2 py-1 text-[9px] bg-red-500/30 text-red-200">🗑</button>
+      </div>
+    </div>
+  `;
+}
+
+window.openRoomDialog = async function(id){
+  const t = tournamentsCache.find(x => x.id === id);
+  if(!t) return;
+  const { value: formValues } = await Swal.fire({
+    title: 'Set Room Details',
+    html: `
+      <div style="text-align:left; font-size:13px;">
+        <label style="color:#8ea0cc;font-size:11px;display:block;margin-bottom:4px;">Room Time (e.g., 9:30 PM)</label>
+        <input id="swRoomTime" class="swal2-input" placeholder="9:30 PM" value="${escapeHtml(t.room?.time||'')}">
+        <label style="color:#8ea0cc;font-size:11px;display:block;margin-top:8px;margin-bottom:4px;">Room ID</label>
+        <input id="swRoomId" class="swal2-input" placeholder="123456789" value="${escapeHtml(t.room?.id||'')}">
+        <label style="color:#8ea0cc;font-size:11px;display:block;margin-top:8px;margin-bottom:4px;">Room Password</label>
+        <input id="swRoomPass" class="swal2-input" placeholder="abc123" value="${escapeHtml(t.room?.password||'')}">
+      </div>
+    `,
+    background: '#0d1330', color: '#fff',
+    showCancelButton: true,
+    confirmButtonText: 'Save Room',
+    confirmButtonColor: '#00e5ff',
+    preConfirm: () => {
+      const time = document.getElementById('swRoomTime').value.trim();
+      const roomId = document.getElementById('swRoomId').value.trim();
+      const password = document.getElementById('swRoomPass').value.trim();
+      if(!roomId || !password){
+        Swal.showValidationMessage('Room ID and Password required');
+        return false;
+      }
+      return { time, roomId, password };
+    }
+  });
+  if(!formValues) return;
+  try {
+    await updateDoc(doc(db, 'tournaments', id), {
+      'room.time': formValues.time,
+      'room.id': formValues.roomId,
+      'room.password': formValues.password,
+      roomUpdatedAt: serverTimestamp()
+    });
+    await audit('ROOM_SET', 'tournament', id);
+    Swal.fire({icon:'success', title:'Room saved!', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+// ==================== VIEW PLAYERS ====================
+window.viewPlayers = async function(id){
+  const t = tournamentsCache.find(x => x.id === id);
+  if(!t) return;
+  const playerDetails = t.playerDetails || [];
+  const players = t.players || [];
+
+  let playersHtml = '';
+  if(playerDetails.length > 0){
+    playersHtml = playerDetails.map((p, idx) => {
+      const igns = p.igns || [];
+      const u = usersCache.find(x => x.id === p.userId);
+      return `
+        <div style="background:rgba(255,255,255,.05);padding:10px;border-radius:10px;margin-bottom:8px;border:1px solid rgba(120,160,255,.15);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+            <div style="font-weight:700;font-size:13px;color:#00e5ff;">#${idx+1} ${escapeHtml(p.username || u?.username || 'Player')}</div>
+            <div style="font-size:10px;color:#8ea0cc;">${escapeHtml(u?.userCode || '-')}</div>
+          </div>
+          <div style="font-size:11px;color:#8ea0cc;margin-bottom:6px;"><b>FF UID:</b> ${escapeHtml(p.ffUid || u?.ffUid || '-')}</div>
+          <div style="font-size:11px;color:#8ea0cc;margin-bottom:4px;"><b>In-Game Names (${igns.length}):</b></div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            ${igns.map(ign => `<span style="background:rgba(0,229,255,.15);color:#00e5ff;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;font-family:monospace;">${escapeHtml(ign)}</span>`).join('')}
+          </div>
+          <div style="font-size:10px;color:#8ea0cc;margin-top:6px;">Joined: ${p.joinedAt ? new Date(p.joinedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '-'}</div>
+        </div>
+      `;
+    }).join('');
+  } else if(players.length > 0){
+    playersHtml = players.map((uid, idx) => {
+      const u = usersCache.find(x => x.id === uid);
+      return `<div style="background:rgba(255,255,255,.05);padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;font-size:12px;">#${idx+1} ${escapeHtml(u?.username || 'Unknown')}</div><div style="font-size:10px;color:#8ea0cc;margin-top:4px;">FF UID: ${escapeHtml(u?.ffUid || '-')}</div></div>`;
+    }).join('');
+  } else {
+    playersHtml = '<div style="text-align:center;color:#8ea0cc;padding:20px;font-size:12px;">কোনো player join করেনি</div>';
+  }
+
+  Swal.fire({
+    title: '👥 Players',
+    html: `
+      <div style="text-align:left;max-height:60vh;overflow-y:auto;padding-right:6px;">
+        <div style="background:rgba(0,229,255,.1);padding:10px;border-radius:10px;margin-bottom:12px;">
+          <div style="font-weight:700;font-size:14px;color:#00e5ff;">${escapeHtml(t.title || '-')}</div>
+          <div style="font-size:11px;color:#8ea0cc;margin-top:4px;">${escapeHtml(t.mode || '-')} • ${players.length}/${t.slots?.total || 48} slots</div>
+        </div>
+        ${playersHtml}
+      </div>
+    `,
+    background: '#0d1330',
+    color: '#fff',
+    width: 480,
+    showConfirmButton: true,
+    confirmButtonText: 'Close',
+    confirmButtonColor: '#00e5ff'
+  });
+};
+  window.createTournament = async function(){
+  const title = $('tTitle').value.trim();
+  const mode = $('tMode').value;
+  const entryFee = Number($('tFee').value) || 0;
+  const prizePool = Number($('tPrize').value) || 0;
+  const slotsTotal = Number($('tSlots').value) || 48;
+  const startAt = $('tStart').value;
+
+  if(!title){ Swal.fire({icon:'warning', title:'Title required', background:'#0d1330', color:'#fff'}); return; }
+  if(!startAt){ Swal.fire({icon:'warning', title:'Start time required', background:'#0d1330', color:'#fff'}); return; }
+
+  try {
+    await addDoc(collection(db, 'tournaments'), {
+      title, mode, entryFee, prizePool,
+      slots: { total: slotsTotal, filled: 0 },
+      players: [],
+      playerDetails: [],
+      startAt: new Date(startAt).toISOString(),
+      status: 'upcoming',
+      createdAt: serverTimestamp(),
+      createdBy: adminUser.uid
+    });
+    await audit('TOURNAMENT_CREATE', 'tournament', title);
+    $('tTitle').value = '';
+    $('tStart').value = '';
+    Swal.fire({icon:'success', title:'Tournament created!', background:'#0d1330', color:'#fff', timer:1500, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+window.updateTournamentStatus = async function(id, status){
+  const t = tournamentsCache.find(x => x.id === id);
+  const labels = { upcoming:'Upcoming', ongoing:'Ongoing', completed:'Completed' };
+  try {
+    await updateDoc(doc(db, 'tournaments', id), { status });
+    await audit('TOURNAMENT_STATUS', 'tournament', id);
+    Swal.fire({icon:'success', title:`Status: ${labels[status]||status}`, text:t?.title||'', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:'Failed', text:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+window.deleteTournament = async function(id){
+  const r = await Swal.fire({
+    title:'Delete tournament?', text:'Cannot be undone.',
+    icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await deleteDoc(doc(db, 'tournaments', id));
+    await audit('TOURNAMENT_DELETE', 'tournament', id);
+    Swal.fire({icon:'success', title:'Deleted', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+// ==================== RESULTS ====================
+function renderResultsAdmin(){
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 PUBLISH RESULT</div>
+        <select id="rTournament" class="input mb-2">
+          <option value="">— Select Tournament —</option>
+          ${tournamentsCache.map(t => `<option value="${t.id}">${escapeHtml(t.title||'-')}</option>`).join('')}
+        </select>
+        <input id="rWinner1" class="input mb-2" placeholder="1st Place (username / FF IGN)"/>
+        <input id="rPrize1" type="number" class="input mb-2" placeholder="1st Prize (৳)"/>
+        <input id="rWinner2" class="input mb-2" placeholder="2nd Place (optional)"/>
+        <input id="rPrize2" type="number" class="input mb-2" placeholder="2nd Prize (optional)"/>
+        <input id="rWinner3" class="input mb-2" placeholder="3rd Place (optional)"/>
+        <input id="rPrize3" type="number" class="input mb-2" placeholder="3rd Prize (optional)"/>
+        <button onclick="publishResult()" class="btn w-full py-2 bg-cyan-500 text-black">PUBLISH RESULT</button>
+      </div>
+    </div>
+  `;
+}
+
+window.publishResult = async function(){
+  const tId = $('rTournament').value;
+  if(!tId){ Swal.fire({icon:'warning', title:'Select a tournament', background:'#0d1330', color:'#fff'}); return; }
+  const t = tournamentsCache.find(x => x.id === tId);
+  const w1 = $('rWinner1').value.trim();
+  const p1 = Number($('rPrize1').value) || 0;
+  const w2 = $('rWinner2').value.trim();
+  const p2 = Number($('rPrize2').value) || 0;
+  const w3 = $('rWinner3').value.trim();
+  const p3 = Number($('rPrize3').value) || 0;
+  if(!w1 || !p1){ Swal.fire({icon:'warning', title:'1st place required', background:'#0d1330', color:'#fff'}); return; }
+  try {
+    const winners = [{ rank:1, name:w1, prize:p1 }];
+    if(w2 && p2) winners.push({ rank:2, name:w2, prize:p2 });
+    if(w3 && p3) winners.push({ rank:3, name:w3, prize:p3 });
+    await addDoc(collection(db, 'results'), {
+      tournamentId: tId, tournamentName: t?.title || '', winners,
+      at: serverTimestamp(), publishedBy: adminUser.uid
+    });
+    await updateDoc(doc(db, 'tournaments', tId), { status:'completed' });
+    await audit('RESULT_PUBLISH', 'result', tId);
+    $('rWinner1').value = ''; $('rPrize1').value = '';
+    $('rWinner2').value = ''; $('rPrize2').value = '';
+    $('rWinner3').value = ''; $('rPrize3').value = '';
+    Swal.fire({icon:'success', title:'Published!', background:'#0d1330', color:'#fff', timer:1500, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+  // ==================== DEPOSITS ====================
+function renderDeposits(){
+  const pending = transactionsCache.filter(t => t.type === 'deposit_request' && t.status === 'pending');
+  const completed = transactionsCache.filter(t => t.type === 'deposit' && t.status === 'completed').slice(0, 20);
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">💰 PENDING DEPOSITS (${pending.length})</div>
+        ${pending.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th><th>Actions</th></tr></thead>
+          <tbody>${pending.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-yellow-300 font-bold">৳${fmt(t.amount||0)}</td>
+              <td class="text-xs">${escapeHtml(t.method||'-')}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+              <td>
+                <button onclick="approveDeposit('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
+                <button onclick="rejectDeposit('${t.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/20 text-red-300">Reject</button>
+              </td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-sm text-center py-6">No pending deposits</div>`}
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">✅ RECENT DEPOSITS (${completed.length})</div>
+        ${completed.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th></tr></thead>
+          <tbody>${completed.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-green-300 font-bold">৳${fmt(t.amount||0)}</td>
+              <td class="text-xs">${escapeHtml(t.method||'-')}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-xs text-center py-4">No completed deposits</div>`}
+      </div>
+    </div>
+  `;
+}
+
+window.approveDeposit = async function(txId){
+  const t = transactionsCache.find(x => x.id === txId);
+  if(!t) return;
+  const r = await Swal.fire({
+    title:'Approve deposit?', text:`৳${fmt(t.amount)} will be added.`,
+    icon:'question', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#22ff88'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await runTransaction(db, async (trx) => {
+      const txRef = doc(db, 'transactions', txId);
+      const userRef = doc(db, 'users', t.userId);
+      const userSnap = await trx.get(userRef);
+      if(!userSnap.exists()) throw new Error('User not found');
+      trx.update(userRef, { 'wallet.available': increment(t.amount) });
+      trx.update(txRef, { status:'completed', approvedAt: serverTimestamp(), approvedBy: adminUser.uid });
+    });
+    await audit('DEPOSIT_APPROVE', 'transaction', txId);
+    Swal.fire({icon:'success', title:'Approved', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+window.rejectDeposit = async function(txId){
+  const r = await Swal.fire({
+    title:'Reject deposit?', icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await updateDoc(doc(db, 'transactions', txId), { status:'rejected', rejectedAt: serverTimestamp(), rejectedBy: adminUser.uid });
+    await audit('DEPOSIT_REJECT', 'transaction', txId);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+// ==================== WITHDRAWALS ====================
+function renderWithdrawals(){
+  const pending = transactionsCache.filter(t => t.type === 'withdrawal_request' && t.status === 'pending');
+  const completed = transactionsCache.filter(t => t.type === 'withdrawal' && t.status === 'completed').slice(0, 20);
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">💸 PENDING WITHDRAWALS (${pending.length})</div>
+        ${pending.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Time</th><th>Actions</th></tr></thead>
+          <tbody>${pending.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-red-300 font-bold">৳${fmt(Math.abs(t.amount||0))}</td>
+              <td class="text-xs">${escapeHtml(t.method||'-')}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+              <td>
+                <button onclick="approveWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-green-500/20 text-green-300">Approve</button>
+                <button onclick="rejectWithdrawal('${t.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/20 text-red-300">Reject</button>
+              </td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-sm text-center py-6">No pending withdrawals</div>`}
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">✅ RECENT WITHDRAWALS (${completed.length})</div>
+        ${completed.length ? `<div class="overflow-x-auto"><table>
+          <thead><tr><th>User</th><th>Amount</th><th>Time</th></tr></thead>
+          <tbody>${completed.map(t => {
+            const u = usersCache.find(x => x.id === t.userId);
+            return `<tr>
+              <td class="text-xs">${escapeHtml(u?.username||'-')}</td>
+              <td class="text-red-300 font-bold">৳${fmt(Math.abs(t.amount||0))}</td>
+              <td class="text-[10px] text-slate-400">${shortTime(t.at)}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="text-slate-400 text-xs text-center py-4">No completed withdrawals</div>`}
+      </div>
+    </div>
+  `;
+}
+
+window.approveWithdrawal = async function(txId){
+  const t = transactionsCache.find(x => x.id === txId);
+  if(!t) return;
+  const r = await Swal.fire({
+    title:'Approve withdrawal?', text:`৳${fmt(Math.abs(t.amount))} will be deducted.`,
+    icon:'question', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#22ff88'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await updateDoc(doc(db, 'transactions', txId), { status:'completed', approvedAt: serverTimestamp(), approvedBy: adminUser.uid });
+    await addDoc(collection(db,'transactions'), {
+      userId: t.userId, type:'withdrawal', amount: -Math.abs(t.amount),
+      status:'completed', at:serverTimestamp()
+    });
+    await audit('WITHDRAWAL_APPROVE', 'transaction', txId);
+    Swal.fire({icon:'success', title:'Approved', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.rejectWithdrawal = async function(txId){
+  const t = transactionsCache.find(x => x.id === txId);
+  if(!t) return;
+  const r = await Swal.fire({
+    title:'Reject withdrawal?', text:`৳${fmt(Math.abs(t.amount))} will be refunded.`,
+    icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await runTransaction(db, async (trx) => {
+      const userRef = doc(db, 'users', t.userId);
+      trx.update(userRef, { 'wallet.available': increment(Math.abs(t.amount)) });
+      trx.update(doc(db,'transactions',txId), { status:'rejected', rejectedAt: serverTimestamp() });
+    });
+    await audit('WITHDRAWAL_REJECT', 'transaction', txId);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+  // ==================== GAME MODES ====================
+function renderModes(){
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🎮 ADD GAME MODE</div>
+        <input id="gmName" class="input mb-2" placeholder="Mode name (e.g., BR Solo)"/>
+        <input id="gmIcon" class="input mb-2" placeholder="Icon emoji (e.g., 🎯)" value="🎮"/>
+        <button onclick="addGameMode()" class="btn w-full py-2 bg-cyan-500 text-black">ADD MODE</button>
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 GAME MODES (${gameModesCache.length})</div>
+        <div class="space-y-2">
+          ${gameModesCache.length ? gameModesCache.map(m => gameModeRow(m)).join('') :
+            `<div class="text-slate-400 text-xs text-center py-6">No modes yet</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function gameModeRow(m){
+  return `
+    <div class="flex items-center gap-2 p-3 rounded-lg bg-white/5 border border-white/10">
+      <div class="text-2xl">${escapeHtml(m.icon||'🎮')}</div>
+      <div class="flex-1">
+        <div class="font-semibold text-xs">${escapeHtml(m.name||'-')}</div>
+        <div class="text-[10px] ${m.active?'text-green-300':'text-red-300'}">${m.active?'ACTIVE':'DISABLED'}</div>
+      </div>
+      <button onclick="toggleGameMode('${m.id}', ${m.active})" class="btn px-2 py-1 text-[10px] ${m.active?'bg-red-500/20 text-red-300':'bg-green-500/20 text-green-300'}">${m.active?'Disable':'Enable'}</button>
+      <button onclick="deleteGameMode('${m.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/30 text-red-200">🗑</button>
+    </div>
+  `;
+}
+
+window.addGameMode = async function(){
+  const name = $('gmName').value.trim();
+  const icon = $('gmIcon').value.trim() || '🎮';
+  if(!name){ Swal.fire({icon:'warning', title:'Name required', background:'#0d1330', color:'#fff'}); return; }
+  try {
+    await addDoc(collection(db, 'gameModes'), { name, icon, active:true, at: serverTimestamp() });
+    await audit('GAMEMODE_ADD', 'gameMode', name);
+    $('gmName').value = '';
+    Swal.fire({icon:'success', title:'Added!', background:'#0d1330', color:'#fff', timer:1000, showConfirmButton:false});
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.toggleGameMode = async function(id, current){
+  try {
+    await updateDoc(doc(db, 'gameModes', id), { active: !current });
+    await audit('GAMEMODE_TOGGLE', 'gameMode', id);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.deleteGameMode = async function(id){
+  const r = await Swal.fire({
+    title:'Delete mode?', icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await deleteDoc(doc(db, 'gameModes', id));
+    await audit('GAMEMODE_DELETE', 'gameMode', id);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+// ==================== BANNERS ====================
+function renderBanners(){
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🖼️ ADD BANNER</div>
+        <input id="bnTitle" class="input mb-2" placeholder="Banner title"/>
+        <input id="bnSubtitle" class="input mb-2" placeholder="Subtitle (optional)"/>
+        <input id="bnBtn" class="input mb-2" placeholder="Button text (e.g., Join Now)" value="Join Now"/>
+        <select id="bnAction" class="input mb-2">
+          <option value="tournaments">Go to Tournaments</option>
+          <option value="wallet">Go to Wallet</option>
+          <option value="messages">Go to Messages</option>
+        </select>
+        <button onclick="addBanner()" class="btn w-full py-2 bg-cyan-500 text-black">ADD BANNER</button>
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📋 BANNERS (${bannersCache.length})</div>
+        <div class="space-y-2">
+          ${bannersCache.length ? bannersCache.map(b => bannerRow(b)).join('') :
+            `<div class="text-slate-400 text-xs text-center py-6">No banners yet</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function bannerRow(b){
+  return `
+    <div class="p-3 rounded-lg bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border border-cyan-500/30">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <div class="font-semibold text-xs">${escapeHtml(b.title||'-')}</div>
+          <div class="text-[10px] text-slate-300 mt-1">${escapeHtml(b.subtitle||'')}</div>
+          <div class="text-[9px] text-slate-400 mt-1">${escapeHtml(b.action||'tournaments')} • ${b.active!==false?'ACTIVE':'OFF'}</div>
+        </div>
+        <div class="flex gap-1">
+          <button onclick="toggleBanner('${b.id}', ${b.active !== false})" class="btn px-2 py-1 text-[10px] ${b.active!==false?'bg-red-500/20 text-red-300':'bg-green-500/20 text-green-300'}">${b.active!==false?'Off':'On'}</button>
+          <button onclick="deleteBanner('${b.id}')" class="btn px-2 py-1 text-[10px] bg-red-500/30 text-red-200">🗑</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.addBanner = async function(){
+  const title = $('bnTitle').value.trim();
+  const subtitle = $('bnSubtitle').value.trim();
+  const btn = $('bnBtn').value.trim() || 'Join Now';
+  const action = $('bnAction').value;
+  if(!title){ Swal.fire({icon:'warning', title:'Title required', background:'#0d1330', color:'#fff'}); return; }
+  try {
+    await addDoc(collection(db, 'banners'), { title, subtitle, btn, action, active:true, at: serverTimestamp() });
+    await audit('BANNER_ADD', 'banner', title);
+    $('bnTitle').value = ''; $('bnSubtitle').value = '';
+    Swal.fire({icon:'success', title:'Added!', background:'#0d1330', color:'#fff', timer:1000, showConfirmButton:false});
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.toggleBanner = async function(id, current){
+  try {
+    await updateDoc(doc(db, 'banners', id), { active: !current });
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+window.deleteBanner = async function(id){
+  const r = await Swal.fire({
+    title:'Delete banner?', icon:'warning', showCancelButton:true,
+    background:'#0d1330', color:'#fff', confirmButtonColor:'#ff3b5c'
+  });
+  if(!r.isConfirmed) return;
+  try {
+    await deleteDoc(doc(db, 'banners', id));
+    await audit('BANNER_DELETE', 'banner', id);
+  } catch(e){ Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'}); }
+};
+
+// ==================== NOTIFICATIONS ====================
+function renderNotificationsAdmin(){
+  $('adminMain').innerHTML = `
+    <div class="page space-y-4">
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">🔔 SEND NOTIFICATION</div>
+        <input id="notifTitle" class="input mb-2" placeholder="Title"/>
+        <textarea id="notifBody" class="input mb-2" rows="3" placeholder="Message body"></textarea>
+        <select id="notifTarget" class="input mb-3">
+          <option value="all">📢 All Users</option>
+          ${usersCache.map(u => `<option value="${u.id}">👤 ${escapeHtml(u.username||'-')}</option>`).join('')}
+        </select>
+        <button onclick="sendNotification()" class="btn w-full py-2 bg-cyan-500 text-black">SEND</button>
+      </div>
+      <div class="glass card p-4">
+        <div class="font-game text-sm text-cyan-300 mb-3">📜 RECENT (${notificationsCache.length})</div>
+        <div class="space-y-2 max-h-96 overflow-y-auto">
+          ${notificationsCache.length ? notificationsCache.slice(0,30).map(n => `
+            <div class="p-3 rounded-lg bg-white/5 border border-white/10">
+              <div class="font-semibold text-xs">${escapeHtml(n.title||'-')}</div>
+              <div class="text-[11px] text-slate-300 mt-1">${escapeHtml(n.body||'-')}</div>
+              <div class="text-[10px] text-slate-500 mt-1">${shortTime(n.at)} • ${n.target==='all'?'All Users':'Single User'}</div>
+            </div>
+          `).join('') : `<div class="text-slate-400 text-xs text-center py-4">No notifications yet</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.sendNotification = async function(){
+  const title = $('notifTitle').value.trim();
+  const body = $('notifBody').value.trim();
+  const target = $('notifTarget').value;
+  if(!title || !body){
+    Swal.fire({icon:'warning', title:'Title & body required', background:'#0d1330', color:'#fff'});
+    return;
+  }
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      title, body, target, readBy: [], at: serverTimestamp(), by: adminUser.uid
+    });
+    await audit('NOTIFICATION_SEND', 'notification', target);
+    $('notifTitle').value = '';
+    $('notifBody').value = '';
+    Swal.fire({icon:'success', title:'Sent!', background:'#0d1330', color:'#fff', timer:1200, showConfirmButton:false});
+  } catch(e){
+    Swal.fire({icon:'error', title:e.message, background:'#0d1330', color:'#fff'});
+  }
+};
+
+// ==================== AUDIT LOG ====================
+function renderAudit(){
+  $('adminMain').innerHTML = `
+    <div class="page glass card p-4">
+      <div class="font-game text-sm text-cyan-300 mb-3">📜 AUDIT LOG (${auditCache.length})</div>
+      <div class="space-y-2 max-h-[70vh] overflow-y-auto">
+        ${auditCache.length ? auditCache.slice(0,100).map(a => auditRow(a)).join('') :
+          `<div class="text-slate-400 text-xs text-center py-6">No activity yet</div>`}
+      </div>
+    </div>
+  `;
+}
+
+function auditRow(a){
+  const iconMap = {
+    'LOGIN':'🔓','LOGOUT':'🔒',
+    'USER_BLOCK':'🚫','USER_UNBLOCK':'✅',
+    'DEPOSIT_APPROVE':'💰','DEPOSIT_REJECT':'❌',
+    'WITHDRAWAL_APPROVE':'💸','WITHDRAWAL_REJECT':'❌',
+    'TOURNAMENT_CREATE':'🏆','TOURNAMENT_STATUS':'🔄','TOURNAMENT_DELETE':'🗑',
+    'ROOM_SET':'🎮',
+    'RESULT_PUBLISH':'📋',
+    'GAMEMODE_ADD':'🎮','GAMEMODE_TOGGLE':'🎮','GAMEMODE_DELETE':'🗑',
+    'BANNER_ADD':'🖼️','BANNER_DELETE':'🗑',
+    'NOTIFICATION_SEND':'🔔'
+  };
+  const icon = iconMap[a.action] || '📌';
+  return `
+    <div class="p-3 rounded-lg bg-white/5 border border-white/10">
+      <div class="flex items-center gap-2">
+        <div class="text-lg">${icon}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-xs">${escapeHtml(a.action||'-')}</div>
+          <div class="text-[10px] text-slate-400">${escapeHtml(a.target||'-')} • ${escapeHtml(a.recordId||'-')}</div>
+        </div>
+        <div class="text-[10px] text-slate-500 text-right">${shortTime(a.at)}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== HELPERS ====================
+function updateMsgBadge(){
+  const unread = messagesCache.filter(m => m.from === 'user' && !m.read).length;
+  const badge = $('msgNavBadge');
+  if(badge){
+    if(unread > 0){ badge.textContent = unread; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
+  }
+}
+
+async function audit(action, target, recordId){
+  try {
+    await addDoc(collection(db, 'auditLogs'), {
+      adminId: adminUser.uid,
+      adminEmail: adminUser.email,
+      action, target, recordId,
+      at: serverTimestamp()
+    });
+  } catch(e){ console.error('audit error:', e); }
+}
+</script>
+
+</body>
+</html>
