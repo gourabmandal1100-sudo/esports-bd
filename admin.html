@@ -791,23 +791,28 @@ window.viewPlayers = async function(id){
       const u = usersCache.find(x => x.id === p.userId);
       return `
         <div style="background:rgba(255,255,255,.05);padding:10px;border-radius:10px;margin-bottom:8px;border:1px solid rgba(120,160,255,.15);">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-            <div style="font-weight:700;font-size:13px;color:#00e5ff;">#${idx+1} ${escapeHtml(p.username || u?.username || 'Player')}</div>
-            <div style="font-size:10px;color:#8ea0cc;">${escapeHtml(u?.userCode || '-')}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;">
+            <div style="font-weight:700;font-size:13px;color:#00e5ff;flex:1;">#${idx+1} ${escapeHtml(p.username || u?.username || 'Player')}</div>
+            <button onclick="addPrize('${t.id}', '${p.userId}')" style="background:linear-gradient(135deg,#22ff88,#00e5ff);color:#000;border:none;padding:6px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap;">💰 Add Money</button>
           </div>
+          <div style="font-size:10px;color:#8ea0cc;margin-bottom:6px;">${escapeHtml(u?.userCode || '-')}</div>
           <div style="font-size:11px;color:#8ea0cc;margin-bottom:6px;"><b>FF UID:</b> ${escapeHtml(p.ffUid || u?.ffUid || '-')}</div>
-          <div style="font-size:11px;color:#8ea0cc;margin-bottom:4px;"><b>In-Game Names (${igns.length}):</b></div>
+          <div style="font-size:11px;color:#8ea0cc;margin-bottom:4px;"><b>IGN:</b></div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;">
             ${igns.map(ign => `<span style="background:rgba(0,229,255,.15);color:#00e5ff;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;font-family:monospace;">${escapeHtml(ign)}</span>`).join('')}
           </div>
-          <div style="font-size:10px;color:#8ea0cc;margin-top:6px;">Joined: ${p.joinedAt ? new Date(p.joinedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '-'}</div>
         </div>
       `;
     }).join('');
   } else if(players.length > 0){
     playersHtml = players.map((uid, idx) => {
       const u = usersCache.find(x => x.id === uid);
-      return `<div style="background:rgba(255,255,255,.05);padding:10px;border-radius:10px;margin-bottom:8px;"><div style="font-weight:700;font-size:12px;">#${idx+1} ${escapeHtml(u?.username || 'Unknown')}</div><div style="font-size:10px;color:#8ea0cc;margin-top:4px;">FF UID: ${escapeHtml(u?.ffUid || '-')}</div></div>`;
+      return `<div style="background:rgba(255,255,255,.05);padding:10px;border-radius:10px;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <div style="font-weight:700;font-size:12px;flex:1;">#${idx+1} ${escapeHtml(u?.username || 'Unknown')}</div>
+          <button onclick="addPrize('${t.id}', '${uid}')" style="background:linear-gradient(135deg,#22ff88,#00e5ff);color:#000;border:none;padding:6px 14px;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer;">💰 Add Money</button>
+        </div>
+      </div>`;
     }).join('');
   } else {
     playersHtml = '<div style="text-align:center;color:#8ea0cc;padding:20px;font-size:12px;">কোনো player join করেনি</div>';
@@ -816,12 +821,14 @@ window.viewPlayers = async function(id){
   Swal.fire({
     title: '👥 Players',
     html: `
-      <div style="text-align:left;max-height:60vh;overflow-y:auto;padding-right:6px;">
+      <div style="text-align:left;max-height:65vh;overflow-y:auto;padding-right:6px;">
         <div style="background:rgba(0,229,255,.1);padding:10px;border-radius:10px;margin-bottom:12px;">
           <div style="font-weight:700;font-size:14px;color:#00e5ff;">${escapeHtml(t.title || '-')}</div>
           <div style="font-size:11px;color:#8ea0cc;margin-top:4px;">${escapeHtml(t.mode || '-')} • ${players.length}/${t.slots?.total || 48} slots</div>
+          <div style="font-size:11px;color:#ffd60a;margin-top:4px;">💰 Prize Pool: ৳${fmt(t.prizePool || 0)}</div>
         </div>
         ${playersHtml}
+        <div style="text-align:center;font-size:10px;color:#8ea0cc;margin-top:12px;">💰 Add Money ক্লিক করে টাকা দিন</div>
       </div>
     `,
     background: '#0d1330',
@@ -831,6 +838,103 @@ window.viewPlayers = async function(id){
     confirmButtonText: 'Close',
     confirmButtonColor: '#00e5ff'
   });
+};
+
+window.addPrize = async function(tournamentId, userId){
+  const t = tournamentsCache.find(x => x.id === tournamentId);
+  const u = usersCache.find(x => x.id === userId);
+  if(!u) return;
+
+  const { value: formValues } = await Swal.fire({
+    title: '💰 Add Money',
+    html: `
+      <div style="text-align:left;font-size:13px;">
+        <div style="background:rgba(34,255,136,.1);padding:10px;border-radius:10px;margin-bottom:14px;border:1px solid rgba(34,255,136,.3);">
+          <div style="font-size:11px;color:#8ea0cc;">User:</div>
+          <div style="font-weight:700;font-size:15px;color:#22ff88;margin-top:2px;">${escapeHtml(u.username || '-')}</div>
+          <div style="font-size:11px;color:#8ea0cc;margin-top:4px;">${escapeHtml(u.userCode || '-')} • ${escapeHtml(u.email || '-')}</div>
+        </div>
+
+        <label style="color:#8ea0cc;font-size:12px;display:block;margin-bottom:6px;">💰 Amount (৳)</label>
+        <input id="prizeAmount" type="number" class="swal2-input" placeholder="50" value="${t?.prizePool || 0}" style="font-size:18px;text-align:center;font-weight:700;">
+
+        <label style="color:#8ea0cc;font-size:12px;display:block;margin-top:10px;margin-bottom:6px;">Type</label>
+        <select id="prizeType" class="swal2-input">
+          <option value="prize">🏆 Prize (Winning)</option>
+          <option value="deposit">💳 Deposit (Available)</option>
+          <option value="bonus">🎁 Bonus (Winning)</option>
+        </select>
+
+        <div style="margin-top:14px;padding:10px;background:rgba(34,255,136,.1);border-radius:8px;font-size:11px;color:#22ff88;">
+          ✅ Confirm করলে টাকা সরাসরি <b>${escapeHtml(u.username)}</b>-এর wallet-এ যোগ হবে।
+        </div>
+      </div>
+    `,
+    background: '#0d1330', color: '#fff',
+    showCancelButton: true,
+    confirmButtonText: '💰 Confirm',
+    confirmButtonColor: '#22ff88',
+    width: 420,
+    preConfirm: () => {
+      const amount = Number(document.getElementById('prizeAmount').value);
+      const type = document.getElementById('prizeType').value;
+      if(!amount || amount < 1){ Swal.showValidationMessage('Amount দিন'); return false; }
+      return { amount, type };
+    }
+  });
+
+  if(!formValues) return;
+
+  try {
+    const walletField = (formValues.type === 'deposit') ? 'wallet.available' : 'wallet.winning';
+
+    await runTransaction(db, async (trx) => {
+      const userRef = doc(db, 'users', userId);
+      const uSnap = await trx.get(userRef);
+      if(!uSnap.exists()) throw new Error('User not found');
+
+      trx.update(userRef, { [walletField]: increment(formValues.amount) });
+
+      trx.set(doc(collection(db, 'transactions')), {
+        userId: userId,
+        username: u.username || '',
+        type: formValues.type,
+        amount: formValues.amount,
+        tournamentId: tournamentId || '',
+        tournamentName: t?.title || '',
+        status: 'completed',
+        note: 'Added by admin',
+        at: serverTimestamp()
+      });
+    });
+
+    await audit('MONEY_ADDED', 'user', userId);
+
+    await addDoc(collection(db, 'notifications'), {
+      title: '💰 Money Added!',
+      body: `Admin আপনার account-এ ৳${fmt(formValues.amount)} যোগ করেছেন।`,
+      at: serverTimestamp(),
+      target: userId,
+      readBy: []
+    });
+
+    Swal.fire({
+      icon: 'success',
+      title: '💰 Money Added!',
+      html: `<div style="text-align:center;">
+        <div style="font-size:16px;color:#22ff88;font-weight:700;">${escapeHtml(u.username)}</div>
+        <div style="font-size:18px;color:#ffd60a;font-weight:700;margin-top:8px;">+৳${fmt(formValues.amount)}</div>
+        <div style="font-size:11px;color:#8ea0cc;margin-top:8px;">✅ Wallet-এ যোগ হয়েছে</div>
+      </div>`,
+      background: '#0d1330',
+      color: '#fff',
+      timer: 2200,
+      showConfirmButton: false
+    });
+  } catch(e){
+    console.error('Add money error:', e);
+    Swal.fire({icon:'error', title:'Failed', text:e.message, background:'#0d1330', color:'#fff'});
+  }
 };
 
 window.createTournament = async function(){
