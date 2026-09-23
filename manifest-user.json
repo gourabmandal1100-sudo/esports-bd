@@ -1,0 +1,25 @@
+{
+  "name": "E-SPORTS BD",
+  "short_name": "E-SPORTS BD",
+  "description": "Play Free Fire tournaments and win prizes",
+  "start_url": "/user.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070b1c",
+  "theme_color": "#a855f7",
+  "icons": [
+    {
+      "src": "https://api.dicebear.com/7.x/bottts/svg?seed=esports",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "https://api.dicebear.com/7.x/bottts/svg?seed=esports",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
