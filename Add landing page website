@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+<!-- SEO Meta Tags -->
+<title>E-SPORTS BD — Free Fire Tournament App | Download APK</title>
+<meta name="description" content="E-SPORTS BD — Bangladesh's #1 Free Fire Tournament App. Play BR Match, CS 4v4, Clash Squad, Headshot tournaments and win real cash prizes. Download APK now!"/>
+<meta name="keywords" content="E-SPORTS BD, Esports BD, Free Fire Tournament, FF Tournament BD, Free Fire Custom Room, Bangladesh Esports, FF Tournament App, Free Fire Prize Money, FFBD, Garena Free Fire Bangladesh"/>
+<meta name="author" content="E-SPORTS BD"/>
+<meta name="robots" content="index, follow"/>
+<meta name="language" content="Bengali"/>
+
+<!-- Open Graph (Facebook share) -->
+<meta property="og:title" content="E-SPORTS BD — Free Fire Tournament App"/>
+<meta property="og:description" content="Play Free Fire tournaments and win real cash prizes! Download the app now."/>
+<meta property="og:image" content="https://e-sports-bd-777.web.app/user-icon.png"/>
+<meta property="og:url" content="https://gourabmandal1100-sudo.github.io/esports-bd/"/>
+<meta property="og:type" content="website"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="E-SPORTS BD — Free Fire Tournament App"/>
+<meta name="twitter:description" content="Play Free Fire tournaments and win real cash prizes!"/>
+<meta name="twitter:image" content="https://e-sports-bd-777.web.app/user-icon.png"/>
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="https://e-sports-bd-777.web.app/user-icon.png"/>
+<link rel="apple-touch-icon" href="https://e-sports-bd-777.web.app/user-icon.png"/>
+
+<!-- Theme -->
+<meta name="theme-color" content="#a855f7"/>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Structured Data (Google Search) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MobileApplication",
+  "name": "E-SPORTS BD",
+  "alternateName": ["Esports BD", "E Sports BD", "FF Tournament BD"],
+  "description": "Bangladesh's #1 Free Fire tournament app. Play tournaments and win real cash prizes.",
+  "operatingSystem": "Android",
+  "applicationCategory": "GameApplication",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "BDT"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.8",
+    "ratingCount": "1250"
+  },
+  "downloadUrl": "https://github.com/gourabmandal1100-sudo/esports-bd/releases/download/user-v1.0.0/E-SPORTS-BD-v1.0.apk"
+}
+</script>
+
+<style>
+  :root{
+    --navy:#070b1c; --cyan:#00e5ff; --yellow:#ffd60a; --purple:#a855f7; --green:#22ff88; --red:#ff3b5c;
+  }
+  *{font-family:'Inter',sans-serif; scroll-behavior:smooth;}
+  h1,h2,h3,.font-game{font-family:'Orbitron',sans-serif; letter-spacing:.5px;}
+  body{
+    background: radial-gradient(1200px 600px at 10% -10%, rgba(168,85,247,.18), transparent 60%),
+                radial-gradient(900px 500px at 110% 10%, rgba(0,229,255,.15), transparent 60%),
+                var(--navy);
+    color:#e7ecff; min-height:100vh; overflow-x:hidden;
+  }
+  .glass{background:rgba(20,28,60,.55); backdrop-filter:blur(14px); border:1px solid rgba(120,160,255,.15);}
+  .glow-cyan{box-shadow:0 0 30px rgba(0,229,255,.4);}
+  .glow-purple{box-shadow:0 0 30px rgba(168,85,247,.4);}
+  .neon-text{text-shadow:0 0 10px currentColor, 0 0 20px currentColor;}
+  .gradient-text{background:linear-gradient(90deg,var(--cyan),var(--purple)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .card{border-radius:20px;}
+  .btn{border-radius:14px; font-weight:700; transition:.2s; cursor:pointer;}
+  .btn:hover{transform:translateY(-2px);}
+  .btn:active{transform:scale(.97);}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.6;}}
+  .live-pulse{animation:pulse 1.5s infinite;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);}}
+  .fade-up{animation:fadeUp .6s ease both;}
+  @keyframes float{0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);}}
+  .float{animation:float 3s ease-in-out infinite;}
+</style>
+</head>
+<body>
+
+<!-- ==================== NAVBAR ==================== -->
+<nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-cyan-500/20">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center font-game text-black text-xs font-bold">ES</div>
+      <div>
+        <div class="font-game text-sm font-bold">E-SPORTS BD</div>
+        <div class="text-[9px] text-cyan-300 tracking-widest">PLAY & WIN</div>
+      </div>
+    </div>
+    <a href="#download" class="btn px-4 py-2 text-xs bg-gradient-to-r from-cyan-500 to-purple-500 text-black font-bold">⬇️ Download</a>
+  </div>
+</nav>
+
+<!-- ==================== HERO ==================== -->
+<section class="pt-24 pb-12 px-4 max-w-5xl mx-auto text-center fade-up">
+  <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass mb-4">
+    <span class="w-2 h-2 rounded-full bg-green-400 live-pulse"></span>
+    <span class="text-xs text-green-300 font-semibold">LIVE — Daily Tournaments</span>
+  </div>
+
+  <h1 class="font-game text-4xl md:text-6xl font-black mb-4">
+    <span class="gradient-text">E-SPORTS BD</span>
+  </h1>
+
+  <p class="text-lg md:text-xl text-slate-300 mb-2 max-w-2xl mx-auto">
+    বাংলাদেশের #১ <span class="text-cyan-300 font-bold">Free Fire Tournament App</span>
+  </p>
+
+  <p class="text-sm text-slate-400 mb-8 max-w-xl mx-auto">
+    BR Match, CS 4v4, Clash Squad, Headshot — সব tournaments খেলুন এবং real cash prizes জিতুন!
+  </p>
+
+  <!-- Download Button (Big) -->
+  <div class="flex flex-col sm:flex-row gap-3 justify-center items-center mb-6">
+    <a href="https://github.com/gourabmandal1100-sudo/esports-bd/releases/download/user-v1.0.0/E-SPORTS-BD-v1.0.apk"
+       class="btn px-8 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-black font-bold text-base glow-cyan flex items-center gap-2">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 11.586V3a1 1 0 011-1z"/><path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/></svg>
+      DOWNLOAD APK — FREE
+    </a>
+    <div class="text-xs text-slate-400">
+      <div class="font-bold text-slate-200">706 KB</div>
+      <div>Android 6.0+</div>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-4 justify-center text-xs text-slate-400">
+    <div class="flex items-center gap-1">✅ 100% Free</div>
+    <div class="flex items-center gap-1">✅ Real Cash Prizes</div>
+    <div class="flex items-center gap-1">✅ Instant bKash/Nagad</div>
+  </div>
+</section>
+
+<!-- ==================== APP PREVIEW ==================== -->
+<section class="py-12 px-4 max-w-5xl mx-auto">
+  <div class="flex flex-wrap justify-center gap-4">
+    <div class="glass card p-4 w-64 float">
+      <div class="text-3xl mb-2">🎮</div>
+      <div class="font-game text-cyan-300 text-sm">FREE FIRE</div>
+      <div class="text-xs text-slate-400 mt-1">BR, CS, Clash Squad, Headshot</div>
+    </div>
+    <div class="glass card p-4 w-64 float" style="animation-delay:.5s;">
+      <div class="text-3xl mb-2">💰</div>
+      <div class="font-game text-yellow-300 text-sm">REAL CASH</div>
+      <div class="text-xs text-slate-400 mt-1">৳20 - ৳50,000 Prize Pool</div>
+    </div>
+    <div class="glass card p-4 w-64 float" style="animation-delay:1s;">
+      <div class="text-3xl mb-2">⚡</div>
+      <div class="font-game text-green-300 text-sm">FAST PAYOUT</div>
+      <div class="text-xs text-slate-400 mt-1">bKash / Nagad / Rocket</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FEATURES ==================== -->
+<section class="py-12 px-4 max-w-5xl mx-auto">
+  <h2 class="font-game text-2xl md:text-3xl text-center mb-8">
+    <span class="gradient-text">FEATURES</span>
+  </h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="glass card p-5">
+      <div class="text-3xl mb-3">🏆</div>
+      <h3 class="font-bold text-cyan-300 mb-1">Daily Tournaments</h3>
+      <p class="text-xs text-slate-400">প্রতিদিন BR, Duo, CS, Clash Squad tournaments — ৫ মিনিটে join করুন।</p>
+    </div>
+
+    <div class="glass card p-5">
+      <div class="text-3xl mb-3">💰</div>
+      <h3 class="font-bold text-yellow-300 mb-1">Real Cash Prizes</h3>
+      <p class="text-xs text-slate-400">Winner হলে সরাসরি bKash/Nagad-এ পেমেন্ট।</p>
+    </div>
+
+    <div class="glass card p-5">
+      <div class="text-3xl mb-3">🔐</div>
+      <h3 class="font-bold text-green-300 mb-1">Secure Wallet</h3>
+      <p class="text-xs text-slate-400">Instant deposit, দ্রুত withdrawal, ২৪/৭ active।</p>
+    </div>
+
+    <div class="glass card p-5">
+      <div class="text-3xl mb-3">🎯</div>
+      <h3 class="font-bold text-pink-300 mb-1">IGN Join System</h3>
+      <p class="text-xs text-slate-400">সহজে IGN দিয়ে join, room ID/password auto।</p>
+    </div>
+
+    <div class="glass card p-5">
+      <div class="text-3xl mb-3">💬</div>
+      <h3 class="font-bold text-purple-300 mb-1">Live Chat Support</h3>
+      <p class="text-xs text-slate-400">Admin-এর সাথে সরাসরি chat — instant help।</p>
+    </div>
+
+    <div class="glass card p-5">
+      <div class="text-3xl mb-3">📢</div>
+      <h3 class="font-bold text-cyan-300 mb-1">Instant Notifications</h3>
+      <p class="text-xs text-slate-400">নতুন tournament, result, payment সব update।</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== HOW IT WORKS ==================== -->
+<section class="py-12 px-4 max-w-5xl mx-auto">
+  <h2 class="font-game text-2xl md:text-3xl text-center mb-8">
+    <span class="gradient-text">HOW IT WORKS</span>
+  </h2>
+
+  <div class="space-y-4">
+    <div class="glass card p-5 flex items-start gap-4">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center font-game text-black font-bold flex-shrink-0">1</div>
+      <div>
+        <h3 class="font-bold text-cyan-300">APK Download করুন</h3>
+        <p class="text-xs text-slate-400 mt-1">উপরের Download button-এ ক্লিক করে APK install করুন।</p>
+      </div>
+    </div>
+
+    <div class="glass card p-5 flex items-start gap-4">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center font-game text-black font-bold flex-shrink-0">2</div>
+      <div>
+        <h3 class="font-bold text-cyan-300">Signup করুন</h3>
+        <p class="text-xs text-slate-400 mt-1">Email, Phone, FF UID দিয়ে free account তৈরি করুন।</p>
+      </div>
+    </div>
+
+    <div class="glass card p-5 flex items-start gap-4">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center font-game text-black font-bold flex-shrink-0">3</div>
+      <div>
+        <h3 class="font-bold text-cyan-300">Wallet-এ টাকা যোগ করুন</h3>
+        <p class="text-xs text-slate-400 mt-1">bKash/Nagad দিয়ে instant deposit।</p>
+      </div>
+    </div>
+
+    <div class="glass card p-5 flex items-start gap-4">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center font-game text-black font-bold flex-shrink-0">4</div>
+      <div>
+        <h3 class="font-bold text-cyan-300">Tournament JOIN করুন</h3>
+        <p class="text-xs text-slate-400 mt-1">IGN দিন → Room ID/Password পান → খেলুন → জিতুন!</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== DOWNLOAD CTA ==================== -->
+<section id="download" class="py-16 px-4 max-w-3xl mx-auto text-center">
+  <div class="glass card p-8 glow-purple">
+    <div class="text-5xl mb-4">📱</div>
+    <h2 class="font-game text-2xl md:text-3xl mb-3">
+      <span class="gradient-text">DOWNLOAD NOW</span>
+    </h2>
+    <p class="text-sm text-slate-300 mb-6">
+      আজই join করুন এবং প্রথম tournament-এ ৳20 দিয়ে খেলুন!
+    </p>
+
+    <a href="https://github.com/gourabmandal1100-sudo/esports-bd/releases/download/user-v1.0.0/E-SPORTS-BD-v1.0.apk"
+       class="btn inline-flex items-center gap-2 px-10 py-4 bg-gradient-to-r from-cyan-400 to-purple-500 text-black font-bold text-base glow-cyan">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 11.586V3a1 1 0 011-1z"/><path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/></svg>
+      DOWNLOAD APK — 706 KB
+    </a>
+
+    <p class="text-[10px] text-slate-400 mt-4">
+      Version 1.0 • Android 6.0+ • 100% Free
+    </p>
+  </div>
+</section>
+
+<!-- ==================== FAQ ==================== -->
+<section class="py-12 px-4 max-w-3xl mx-auto">
+  <h2 class="font-game text-2xl text-center mb-8">
+    <span class="gradient-text">FAQ</span>
+  </h2>
+
+  <div class="space-y-3">
+    <details class="glass card p-4">
+      <summary class="font-bold text-cyan-300 cursor-pointer">E-SPORTS BD কী?</summary>
+      <p class="text-xs text-slate-400 mt-2">E-SPORTS BD বাংলাদেশের #১ Free Fire tournament app। এখানে real cash prize tournaments খেলা যায়।</p>
+    </details>
+
+    <details class="glass card p-4">
+      <summary class="font-bold text-cyan-300 cursor-pointer">APK install করা কি safe?</summary>
+      <p class="text-xs text-slate-400 mt-2">হ্যাঁ, সম্পূর্ণ safe। APK file official release থেকে download হয়। Install করার আগে "Unknown Sources" enable করতে হবে।</p>
+    </details>
+
+    <details class="glass card p-4">
+      <summary class="font-bold text-cyan-300 cursor-pointer">Payment কিভাবে পাবো?</summary>
+      <p class="text-xs text-slate-400 mt-2">Tournament জিতলে prize টাকা আপনার app wallet-এ যোগ হবে। তারপর bKash/Nagad/Rocket-এ withdraw করতে পারবেন।</p>
+    </details>
+
+    <details class="glass card p-4">
+      <summary class="font-bold text-cyan-300 cursor-pointer">Minimum deposit কত?</summary>
+      <p class="text-xs text-slate-400 mt-2">Minimum deposit ৳50। Minimum withdrawal ৳50। ২৪ ঘন্টার মধ্যে payment।</p>
+    </details>
+
+    <details class="glass card p-4">
+      <summary class="font-bold text-cyan-300 cursor-pointer">Entry fee কত?</summary>
+      <p class="text-xs text-slate-400 mt-2">Entry fee ৳10 - ৳200 পর্যন্ত। Tournament category অনুযায়ী।</p>
+    </details>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="py-10 px-4 mt-8 border-t border-white/10">
+  <div class="max-w-5xl mx-auto text-center">
+    <div class="flex items-center justify-center gap-2 mb-4">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center font-game text-black text-xs font-bold">ES</div>
+      <span class="font-game text-sm">E-SPORTS BD</span>
+    </div>
+
+    <p class="text-xs text-slate-400 mb-2">
+      © 2026 E-SPORTS BD. All rights reserved.
+    </p>
+
+    <p class="text-[10px] text-slate-500">
+      Not affiliated with Garena or Free Fire.<br/>
+      Free Fire is a trademark of Garena International.
+    </p>
+
+    <div class="mt-4 text-[10px] text-slate-500">
+      📧 Contact: gourabmandal1100@gmail.com
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
